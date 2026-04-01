@@ -56,20 +56,18 @@ function filterMenu(category) {
 }
 
 // ==========================================
-// MODAL DE ITENS (Acréscimos e Sabores Dinâmicos)
+// MODAL DE ITENS
 // ==========================================
 let currentItem = null;
 
 function openAddonModal(name, price, category = 'normal') {
-    currentItem = { name: name, basePrice: price, currentPrice: price, isDrink: false };
+    currentItem = { name: name, basePrice: price, currentPrice: price, isDrink: false, category: category };
     
     document.getElementById('item-observation').value = '';
     document.getElementById('modal-burger-name').innerText = name;
-    
     document.getElementById('addon-section').style.display = 'block';
     document.getElementById('flavor-section').style.display = 'none';
 
-    // Definição dos preços baseada na categoria
     const addons = category === 'gigantes' ? [
         { name: 'Catupiry', price: 12.00 },
         { name: 'Cheddar', price: 14.00 },
@@ -84,7 +82,6 @@ function openAddonModal(name, price, category = 'normal') {
 
     const addonContainer = document.getElementById('addon-list-container');
     addonContainer.innerHTML = '';
-
     addons.forEach(addon => {
         addonContainer.innerHTML += `
             <label class="addon-item">
@@ -103,7 +100,6 @@ function openAddonModal(name, price, category = 'normal') {
 
 function openDrinkModal(name, defaultPrice, flavorsString = '') {
     currentItem = { name: name, basePrice: defaultPrice, currentPrice: defaultPrice, isDrink: true, selectedFlavorName: '' };
-    
     document.getElementById('item-observation').value = '';
     document.getElementById('modal-burger-name').innerText = name;
     document.getElementById('addon-section').style.display = 'none';
@@ -115,17 +111,14 @@ function openDrinkModal(name, defaultPrice, flavorsString = '') {
     if (flavorsString) {
         flavorSection.style.display = 'block';
         const flavors = flavorsString.split(',');
-        
         flavors.forEach((flavorData, index) => {
             let flavorName = flavorData.trim();
             let flavorPrice = defaultPrice;
-            
             if (flavorName.includes('|')) {
                 const parts = flavorName.split('|');
                 flavorName = parts[0].trim();
                 flavorPrice = parseFloat(parts[1]);
             }
-
             flavorList.innerHTML += `
                 <label class="addon-item" style="cursor: pointer;">
                     <input type="radio" name="drink-flavor" value="${flavorName}" data-price="${flavorPrice}" class="flavor-radio" ${index === 0 ? 'checked' : ''} onchange="updateDrinkPrice(this)">
@@ -135,7 +128,6 @@ function openDrinkModal(name, defaultPrice, flavorsString = '') {
                     </div>
                 </label>
             `;
-            
             if (index === 0) {
                 currentItem.basePrice = flavorPrice;
                 currentItem.currentPrice = flavorPrice;
@@ -145,7 +137,6 @@ function openDrinkModal(name, defaultPrice, flavorsString = '') {
     } else {
         flavorSection.style.display = 'none';
     }
-
     updateModalPrice();
     document.getElementById('addon-modal').style.display = 'flex';
 }
@@ -175,23 +166,16 @@ function confirmItemWithAddons() {
     let finalName = currentItem.name;
 
     if (currentItem.isDrink) {
-        const flavorSection = document.getElementById('flavor-section');
-        if (flavorSection.style.display === 'block' && currentItem.selectedFlavorName) {
-            finalName = `${currentItem.name} (${currentItem.selectedFlavorName})`;
-        }
+        if (currentItem.selectedFlavorName) finalName = `${currentItem.name} (${currentItem.selectedFlavorName})`;
     } else {
         document.querySelectorAll('.addon-checkbox:checked').forEach(cb => {
-            selectedAddons.push({
-                name: cb.getAttribute('data-name'),
-                price: parseFloat(cb.value)
-            });
+            selectedAddons.push({ name: cb.getAttribute('data-name'), price: parseFloat(cb.value) });
         });
     }
 
     const observation = document.getElementById('item-observation').value.trim();
     const addonsString = selectedAddons.map(a => a.name).sort().join('|');
     const itemKey = `${finalName}-${addonsString}-${observation}`;
-    
     const existingItem = cart.find(item => item.key === itemKey);
 
     if (existingItem) {
@@ -203,7 +187,8 @@ function confirmItemWithAddons() {
             price: currentItem.currentPrice, 
             quantity: 1, 
             addons: selectedAddons,
-            observation: observation 
+            observation: observation,
+            isDrink: currentItem.isDrink // Importante para o cálculo de tempo
         });
     }
     
@@ -220,26 +205,24 @@ function updateCartUI() {
 }
 
 // ==========================================
-// CÁLCULO DE FRETE (VIACEP + Nominatim)
+// CÁLCULO DE FRETE E TEMPO ESTIMADO
 // ==========================================
 let deliveryFee = 0;
+let estimatedTimeRange = ""; 
 let storeCoords = null; 
 
 async function getCoordinates(cep) {
     const resViaCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
     const dataCep = await resViaCep.json();
     if (dataCep.erro) throw new Error("CEP não encontrado");
-
     const query = `${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`;
     const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
     const dataGeo = await resGeo.json();
-    
-    if (dataGeo.length === 0) throw new Error("Localização exata não encontrada");
-    
+    if (dataGeo.length === 0) throw new Error("Localização não encontrada");
     return {
         lat: parseFloat(dataGeo[0].lat),
         lon: parseFloat(dataGeo[0].lon),
-        addressName: `${dataCep.logradouro}, ${dataCep.bairro}, ${dataCep.localidade} - ${dataCep.uf}`
+        addressName: `${dataCep.logradouro}, ${dataCep.bairro}, ${dataCep.localidade}`
     };
 }
 
@@ -248,95 +231,78 @@ async function calculateDelivery() {
     const infoDiv = document.getElementById('frete-info');
     
     if (cepInput.length !== 8) {
-        infoDiv.innerText = "Digite um CEP válido com 8 dígitos.";
+        infoDiv.innerText = "Digite um CEP válido.";
         return;
     }
 
-    infoDiv.innerText = "A procurar endereço e a calcular frete...";
-    deliveryFee = 0;
-
+    infoDiv.innerText = "Calculando frete e tempo...";
     try {
-        if (!storeCoords) {
-            storeCoords = await getCoordinates("13484489"); 
-        }
-
+        if (!storeCoords) storeCoords = await getCoordinates("13484489"); 
         const userCoords = await getCoordinates(cepInput);
         document.getElementById('address').value = userCoords.addressName;
-
         const distance = getDistanceFromLatLonInKm(storeCoords.lat, storeCoords.lon, userCoords.lat, userCoords.lon);
         
-        if (distance <= 1.5) { 
-            deliveryFee = 5.00;
-        } else if (distance <= 7.5) {
-            deliveryFee = 15.00;
+        // Valor do frete
+        if (distance <= 1.5) deliveryFee = 5.00;
+        else if (distance <= 7.5) deliveryFee = 15.00;
+        else deliveryFee = 20.00;
+
+        // --- CÁLCULO DO TEMPO ---
+        // 1 lanche = 15 min. Lanches extras = +5 min cada. (Bebidas ignoradas)
+        const totalLanches = cart.filter(item => !item.isDrink).reduce((acc, item) => acc + item.quantity, 0);
+        let timePrep = 0;
+        if (totalLanches > 0) {
+            timePrep = 15 + ((totalLanches - 1) * 5);
         } else {
-            deliveryFee = 20.00; 
+            timePrep = 10; // Caso seja apenas bebidas
         }
 
-        infoDiv.innerText = `Frete: R$ ${deliveryFee.toFixed(2).replace('.', ',')} (Aprox. ${distance.toFixed(1)} km)`;
-        updateCheckoutTotal();
+        // +3 minutos por cada km
+        const timeTravel = distance * 3;
+        const totalEstimated = timePrep + timeTravel;
+
+        // Criar o intervalo (ex: de -5 min até +20 min do total calculado)
+        const minTime = Math.max(15, Math.floor(totalEstimated - 5));
+        const maxTime = Math.ceil(totalEstimated + 20);
+        estimatedTimeRange = `${minTime} à ${maxTime} minutos`;
+
+        infoDiv.innerHTML = `Frete: R$ ${deliveryFee.toFixed(2).replace('.', ',')} (Aprox. ${distance.toFixed(1)} km)<br>
+                             <span style="color: #2e7d32; font-weight: bold;">Tempo: ${estimatedTimeRange}</span>`;
         
+        updateCheckoutTotal();
     } catch (error) {
-        infoDiv.innerText = "Não foi possível calcular o frete automaticamente. Digite os dados manualmente.";
-        document.getElementById('address').readOnly = false; 
-        document.getElementById('address').value = "";
-        deliveryFee = 0; 
+        infoDiv.innerText = "Erro ao calcular automaticamente. Insira os dados abaixo.";
+        document.getElementById('address').readOnly = false;
+        deliveryFee = 0;
+        estimatedTimeRange = "A combinar";
         updateCheckoutTotal();
     }
 }
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     const R = 6371; 
-    const dLat = deg2rad(lat2-lat1);  
-    const dLon = deg2rad(lon2-lon1); 
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-    return R * c; 
+    const dLat = (lat2-lat1) * (Math.PI/180);
+    const dLon = (lon2-lon1) * (Math.PI/180); 
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))); 
 }
-function deg2rad(deg) { return deg * (Math.PI/180); }
 
 // ==========================================
 // CHECKOUT E WHATSAPP
 // ==========================================
 function openCheckoutModal() {
-    if (cart.length === 0) {
-        alert("O seu carrinho está vazio!");
-        return;
-    }
-
+    if (cart.length === 0) { alert("Carrinho vazio!"); return; }
     const itemsContainer = document.getElementById('checkout-items');
     itemsContainer.innerHTML = '';
-    
     cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        
-        let extrasHtml = '';
-        if (item.addons && item.addons.length > 0) {
-            const addonNames = item.addons.map(a => a.name).join(', ');
-            extrasHtml += `<div style="font-size: 0.8rem; color: #666; margin-top: 4px;">+ ${addonNames}</div>`;
-        }
-        
-        if (item.observation) {
-            extrasHtml += `<div style="font-size: 0.8rem; color: var(--primary-color); margin-top: 2px;">Obs: ${item.observation}</div>`;
-        }
-
         itemsContainer.innerHTML += `
             <div class="checkout-item-row">
-                <div style="flex: 1;">
-                    <strong style="color: var(--primary-color);">${item.quantity}x</strong> <span style="font-weight: 700;">${item.name}</span>
-                    ${extrasHtml}
-                </div>
-                <div style="font-weight: 800; margin-left: 10px; margin-right: 15px;">R$ ${itemTotal.toFixed(2).replace('.', ',')}</div>
-                <button onclick="removeItem(${index})" style="background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">X</button>
-            </div>
-        `;
+                <div style="flex: 1;"><strong>${item.quantity}x</strong> ${item.name}</div>
+                <div style="font-weight: 800;">R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}</div>
+                <button onclick="removeItem(${index})" style="background:#ff4d4d; color:white; border:none; padding:5px 10px; border-radius:5px; margin-left:10px;">X</button>
+            </div>`;
     });
-
-    if(document.getElementById('orderType')) {
-        toggleOrderType(); 
-    } else {
-        updateCheckoutTotal();
-    }
+    toggleOrderType();
     document.getElementById('checkout-modal').style.display = 'flex';
 }
 
@@ -344,146 +310,70 @@ function toggleOrderType() {
     const orderType = document.getElementById('orderType').value;
     const deliveryFields = document.getElementById('delivery-fields');
     const dineInFields = document.getElementById('dine-in-fields');
-    
     if (orderType === 'entrega') {
-        if(deliveryFields) deliveryFields.style.display = 'block';
-        if(dineInFields) dineInFields.style.display = 'none';
-        
-        if (document.getElementById('cep') && document.getElementById('cep').value.length >= 8) {
-            calculateDelivery();
-        } else {
-            updateCheckoutTotal();
-        }
+        deliveryFields.style.display = 'block'; 
+        dineInFields.style.display = 'none';
+        if (document.getElementById('cep').value.length >= 8) calculateDelivery();
+        else updateCheckoutTotal();
     } else {
-        if(deliveryFields) deliveryFields.style.display = 'none';
-        if(dineInFields) dineInFields.style.display = 'block';
-        
+        deliveryFields.style.display = 'none'; 
+        dineInFields.style.display = 'block';
         deliveryFee = 0; 
+        estimatedTimeRange = "15 à 30 minutos"; // Tempo fixo para mesa
         updateCheckoutTotal();
     }
 }
 
 function updateCheckoutTotal() {
     const totalItems = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const orderType = document.getElementById('orderType') ? document.getElementById('orderType').value : 'entrega';
-    
-    const currentDeliveryFee = orderType === 'entrega' ? deliveryFee : 0;
-    const grandTotal = totalItems + currentDeliveryFee;
-    
-    if(document.getElementById('checkout-subtotal')) document.getElementById('checkout-subtotal').innerText = totalItems.toFixed(2).replace('.', ',');
-    if(document.getElementById('checkout-final-total')) document.getElementById('checkout-final-total').innerText = grandTotal.toFixed(2).replace('.', ',');
+    const orderType = document.getElementById('orderType').value;
+    const currentFee = orderType === 'entrega' ? deliveryFee : 0;
+    document.getElementById('checkout-subtotal').innerText = totalItems.toFixed(2).replace('.', ',');
+    document.getElementById('checkout-final-total').innerText = (totalItems + currentFee).toFixed(2).replace('.', ',');
 }
 
 function removeItem(index) {
     cart.splice(index, 1);
     saveCart();
     updateCartUI();
-    
-    if (cart.length === 0) {
-        closeCheckoutModal();
-    } else {
-        openCheckoutModal();
-    }
+    if (cart.length === 0) closeCheckoutModal(); else openCheckoutModal();
 }
 
-function closeCheckoutModal() {
-    document.getElementById('checkout-modal').style.display = 'none';
-}
+function closeCheckoutModal() { document.getElementById('checkout-modal').style.display = 'none'; }
 
 function toggleTroco() {
-    const payment = document.getElementById('payment').value;
-    const trocoContainer = document.getElementById('troco-container');
-    if (payment === 'Dinheiro') {
-        trocoContainer.style.display = 'block';
-    } else {
-        trocoContainer.style.display = 'none';
-    }
+    document.getElementById('troco-container').style.display = document.getElementById('payment').value === 'Dinheiro' ? 'block' : 'none';
 }
 
 function sendToWhatsApp() {
-    const orderTypeSelect = document.getElementById('orderType');
-    const orderType = orderTypeSelect ? orderTypeSelect.value : 'entrega';
+    const orderType = document.getElementById('orderType').value;
     const payment = document.getElementById('payment').value;
     const troco = document.getElementById('troco').value;
 
-    if (orderType === 'entrega') {
-        const address = document.getElementById('address').value;
-        const addressNumber = document.getElementById('addressNumber').value;
-        if (address.trim() === '' || addressNumber.trim() === '') {
-            alert("Por favor, calcule o frete pelo CEP e digite o número da sua residência.");
-            return;
-        }
-    } else {
-        const tableNumber = document.getElementById('tableNumber').value;
-        if (tableNumber.trim() === '') {
-            alert("Por favor, informe o número da mesa para o podermos localizar!");
-            return;
-        }
-    }
-
     let message = `*🍔 NOVO PEDIDO - GARFIELD LANCHES*\n`;
-    message += `*TIPO:* ${orderType === 'entrega' ? '🛵 DELIVERY' : '🍽️ CONSUMO NA MESA'}\n`;
+    message += `*TEMPO ESTIMADO:* ${estimatedTimeRange}\n`; // Adicionado o tempo no topo
     message += `---------------------------------\n`;
 
-    let totalItems = 0;
-    cart.forEach((item) => {
-        const itemTotal = item.price * item.quantity;
-        totalItems += itemTotal;
-        message += `• ${item.quantity}x - ${item.name} - R$ ${itemTotal.toFixed(2).replace('.', ',')}\n`;
-        
-        if (item.addons && item.addons.length > 0) {
-            const addonNames = item.addons.map(a => a.name).join(', ');
-            message += `    + _${addonNames}_\n`;
-        }
-        if (item.observation) {
-            message += `    *Obs:* ${item.observation}\n`;
-        }
+    cart.forEach(item => {
+        message += `• ${item.quantity}x - ${item.name} - R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}\n`;
+        if (item.addons && item.addons.length > 0) message += `  + ${item.addons.map(a => a.name).join(', ')}\n`;
+        if (item.observation) message += `  *Obs:* ${item.observation}\n`;
     });
 
-    const currentDeliveryFee = orderType === 'entrega' ? deliveryFee : 0;
-    const grandTotal = totalItems + currentDeliveryFee;
-
+    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     message += `---------------------------------\n`;
-    message += `*Subtotal:* R$ ${totalItems.toFixed(2).replace('.', ',')}\n`;
+    message += `*Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+    if (orderType === 'entrega') message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
+    message += `*TOTAL: R$ ${(subtotal + (orderType === 'entrega' ? deliveryFee : 0)).toFixed(2).replace('.', ',')}*\n\n`;
     
+    message += `*Pagamento:* ${payment}\n`;
+    if (payment === 'Dinheiro' && troco) message += `*Troco para:* ${troco}\n`;
+
     if (orderType === 'entrega') {
-        if (deliveryFee > 0) {
-            message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
-        } else {
-            message += `*Frete:* A combinar com o atendente\n`;
-        }
-    }
-    
-    message += `💰 *TOTAL DO PEDIDO: R$ ${grandTotal.toFixed(2).replace('.', ',')}*\n\n`;
-    
-    message += `*Forma de pagamento:* ${payment}\n`;
-    if (payment === 'Dinheiro' && troco.trim() !== '') {
-        message += `*Troco para:* R$ ${troco}\n`;
-    }
-    
-    if (orderType === 'entrega') {
-        const cep = document.getElementById('cep').value;
-        const address = document.getElementById('address').value;
-        const addressNumber = document.getElementById('addressNumber').value;
-        const addressComplement = document.getElementById('addressComplement').value;
-        
-        message += `\n*Endereço de entrega:*\n`;
-        if (cep) message += `CEP: ${cep}\n`;
-        message += `${address}, Nº: ${addressNumber}\n`;
-        if (addressComplement) message += `Comp: ${addressComplement}\n`;
+        message += `\n*Endereço:* ${document.getElementById('address').value}, Nº ${document.getElementById('addressNumber').value}`;
     } else {
-        const tableNumber = document.getElementById('tableNumber').value;
-        message += `\n*Local do consumo:*\n`;
-        message += `Mesa: ${tableNumber}\n`;
+        message += `\n*Mesa:* ${document.getElementById('tableNumber').value}`;
     }
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-    
-    window.open(whatsappUrl, '_blank');
-
-    cart = [];
-    saveCart();
-    updateCartUI();
-    closeCheckoutModal();
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
 }
