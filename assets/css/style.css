@@ -219,3 +219,13 @@ body {
 .checkout-form label { display: block; margin-top: 15px; margin-bottom: 5px; color: var(--text-main); font-weight: 600; font-size: 0.9rem; }
 .checkout-form input, .checkout-form select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-size: 1rem; }
 .troco-container { display: none; margin-top: 10px; }
+
+/* CORREÇÃO DE IMAGENS */
+
+.menu-item img[alt="Gatorade"]{
+    object-position: center top;
+}
+
+.menu-item img[alt="Energético Monster"]{
+    object-position: center 85%;
+}

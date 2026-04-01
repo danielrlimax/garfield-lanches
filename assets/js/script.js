@@ -1,4 +1,4 @@
-const whatsappNumber = "5519995219372"; 
+const whatsappNumber = "5519997103303"; 
 let cart = [];
 const CART_EXPIRATION_MS = 60 * 60 * 1000; 
 
@@ -127,7 +127,7 @@ function openDrinkModal(name, defaultPrice, flavorsString = '') {
     document.getElementById('addon-modal').style.display = 'flex';
 }
 
-// Atualiza o preço da bebida assim que o usuário seleciona uma nova opção na lista
+// Atualiza o preço da bebida assim que o utilizador seleciona uma nova opção na lista
 function updateDrinkPrice(radioElement) {
     currentItem.basePrice = parseFloat(radioElement.getAttribute('data-price'));
     currentItem.selectedFlavorName = radioElement.value;
@@ -231,7 +231,7 @@ async function calculateDelivery() {
         return;
     }
 
-    infoDiv.innerText = "Procurando endereço e calculando frete...";
+    infoDiv.innerText = "A procurar endereço e a calcular frete...";
     deliveryFee = 0;
 
     try {
@@ -282,7 +282,7 @@ function deg2rad(deg) { return deg * (Math.PI/180); }
 // ==========================================
 function openCheckoutModal() {
     if (cart.length === 0) {
-        alert("Seu carrinho está vazio!");
+        alert("O seu carrinho está vazio!");
         return;
     }
 
@@ -314,16 +314,50 @@ function openCheckoutModal() {
         `;
     });
 
-    updateCheckoutTotal();
+    // Certifica-se de que a interface reflete a escolha de entrega/mesa
+    if(document.getElementById('orderType')) {
+        toggleOrderType(); 
+    } else {
+        updateCheckoutTotal();
+    }
     document.getElementById('checkout-modal').style.display = 'flex';
+}
+
+function toggleOrderType() {
+    const orderType = document.getElementById('orderType').value;
+    const deliveryFields = document.getElementById('delivery-fields');
+    const dineInFields = document.getElementById('dine-in-fields');
+    
+    if (orderType === 'entrega') {
+        if(deliveryFields) deliveryFields.style.display = 'block';
+        if(dineInFields) dineInFields.style.display = 'none';
+        
+        // Se já tiver CEP digitado, tenta recalcular o frete ao voltar para a aba
+        if (document.getElementById('cep') && document.getElementById('cep').value.length >= 8) {
+            calculateDelivery();
+        } else {
+            updateCheckoutTotal();
+        }
+    } else {
+        if(deliveryFields) deliveryFields.style.display = 'none';
+        if(dineInFields) dineInFields.style.display = 'block';
+        
+        // Zera o frete porque na mesa não tem cobrança
+        deliveryFee = 0; 
+        updateCheckoutTotal();
+    }
 }
 
 function updateCheckoutTotal() {
     const totalItems = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const grandTotal = totalItems + deliveryFee;
+    const orderType = document.getElementById('orderType') ? document.getElementById('orderType').value : 'entrega';
     
-    document.getElementById('checkout-subtotal').innerText = totalItems.toFixed(2).replace('.', ',');
-    document.getElementById('checkout-final-total').innerText = grandTotal.toFixed(2).replace('.', ',');
+    // O frete só soma se for entrega
+    const currentDeliveryFee = orderType === 'entrega' ? deliveryFee : 0;
+    const grandTotal = totalItems + currentDeliveryFee;
+    
+    if(document.getElementById('checkout-subtotal')) document.getElementById('checkout-subtotal').innerText = totalItems.toFixed(2).replace('.', ',');
+    if(document.getElementById('checkout-final-total')) document.getElementById('checkout-final-total').innerText = grandTotal.toFixed(2).replace('.', ',');
 }
 
 function removeItem(index) {
@@ -353,20 +387,29 @@ function toggleTroco() {
 }
 
 function sendToWhatsApp() {
-    const cep = document.getElementById('cep').value;
-    const address = document.getElementById('address').value;
-    const addressNumber = document.getElementById('addressNumber').value;
-    const addressComplement = document.getElementById('addressComplement').value;
-    
+    const orderTypeSelect = document.getElementById('orderType');
+    const orderType = orderTypeSelect ? orderTypeSelect.value : 'entrega';
     const payment = document.getElementById('payment').value;
     const troco = document.getElementById('troco').value;
 
-    if (address.trim() === '' || addressNumber.trim() === '') {
-        alert("Por favor, calcule o frete pelo CEP e digite o número da sua residência.");
-        return;
+    // Validações dependendo do tipo de pedido
+    if (orderType === 'entrega') {
+        const address = document.getElementById('address').value;
+        const addressNumber = document.getElementById('addressNumber').value;
+        if (address.trim() === '' || addressNumber.trim() === '') {
+            alert("Por favor, calcule o frete pelo CEP e digite o número da sua residência.");
+            return;
+        }
+    } else {
+        const tableNumber = document.getElementById('tableNumber').value;
+        if (tableNumber.trim() === '') {
+            alert("Por favor, informe o número da mesa para o podermos localizar!");
+            return;
+        }
     }
 
     let message = `*🍔 NOVO PEDIDO - GARFIELD LANCHES*\n`;
+    message += `*TIPO:* ${orderType === 'entrega' ? '🛵 DELIVERY' : '🍽️ CONSUMO NA MESA'}\n`;
     message += `---------------------------------\n`;
 
     let totalItems = 0;
@@ -384,15 +427,20 @@ function sendToWhatsApp() {
         }
     });
 
-    const grandTotal = totalItems + deliveryFee;
+    const currentDeliveryFee = orderType === 'entrega' ? deliveryFee : 0;
+    const grandTotal = totalItems + currentDeliveryFee;
 
     message += `---------------------------------\n`;
     message += `*Subtotal:* R$ ${totalItems.toFixed(2).replace('.', ',')}\n`;
-    if (deliveryFee > 0) {
-        message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
-    } else {
-        message += `*Frete:* A combinar com o atendente\n`;
+    
+    if (orderType === 'entrega') {
+        if (deliveryFee > 0) {
+            message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
+        } else {
+            message += `*Frete:* A combinar com o atendente\n`;
+        }
     }
+    
     message += `💰 *TOTAL DO PEDIDO: R$ ${grandTotal.toFixed(2).replace('.', ',')}*\n\n`;
     
     message += `*Forma de pagamento:* ${payment}\n`;
@@ -400,10 +448,22 @@ function sendToWhatsApp() {
         message += `*Troco para:* R$ ${troco}\n`;
     }
     
-    message += `\n*Endereço de entrega:*\n`;
-    if (cep) message += `CEP: ${cep}\n`;
-    message += `${address}, Nº: ${addressNumber}\n`;
-    if (addressComplement) message += `Comp: ${addressComplement}\n`;
+    // Inserção de dados de localização
+    if (orderType === 'entrega') {
+        const cep = document.getElementById('cep').value;
+        const address = document.getElementById('address').value;
+        const addressNumber = document.getElementById('addressNumber').value;
+        const addressComplement = document.getElementById('addressComplement').value;
+        
+        message += `\n*Endereço de entrega:*\n`;
+        if (cep) message += `CEP: ${cep}\n`;
+        message += `${address}, Nº: ${addressNumber}\n`;
+        if (addressComplement) message += `Comp: ${addressComplement}\n`;
+    } else {
+        const tableNumber = document.getElementById('tableNumber').value;
+        message += `\n*Local do consumo:*\n`;
+        message += `Mesa: ${tableNumber}\n`;
+    }
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
