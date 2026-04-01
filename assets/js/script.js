@@ -60,15 +60,42 @@ function filterMenu(category) {
 // ==========================================
 let currentItem = null;
 
-function openAddonModal(name, price) {
+function openAddonModal(name, price, category = 'normal') {
     currentItem = { name: name, basePrice: price, currentPrice: price, isDrink: false };
     
-    document.querySelectorAll('.addon-checkbox').forEach(cb => cb.checked = false);
     document.getElementById('item-observation').value = '';
     document.getElementById('modal-burger-name').innerText = name;
     
     document.getElementById('addon-section').style.display = 'block';
     document.getElementById('flavor-section').style.display = 'none';
+
+    // Definição dos preços baseada na categoria
+    const addons = category === 'gigantes' ? [
+        { name: 'Catupiry', price: 12.00 },
+        { name: 'Cheddar', price: 14.00 },
+        { name: 'Cream Cheese', price: 14.00 },
+        { name: 'Purê', price: 12.00 }
+    ] : [
+        { name: 'Catupiry', price: 6.00 },
+        { name: 'Cheddar', price: 7.00 },
+        { name: 'Cream Cheese', price: 7.00 },
+        { name: 'Purê', price: 6.00 }
+    ];
+
+    const addonContainer = document.getElementById('addon-list-container');
+    addonContainer.innerHTML = '';
+
+    addons.forEach(addon => {
+        addonContainer.innerHTML += `
+            <label class="addon-item">
+                <input type="checkbox" class="addon-checkbox" value="${addon.price}" data-name="${addon.name}" onchange="updateModalPrice()"> 
+                <div class="addon-details">
+                    <span class="addon-name">${addon.name}</span>
+                    <span class="addon-price">+ R$ ${addon.price.toFixed(2).replace('.', ',')}</span>
+                </div>
+            </label>
+        `;
+    });
 
     updateModalPrice();
     document.getElementById('addon-modal').style.display = 'flex';
@@ -77,10 +104,8 @@ function openAddonModal(name, price) {
 function openDrinkModal(name, defaultPrice, flavorsString = '') {
     currentItem = { name: name, basePrice: defaultPrice, currentPrice: defaultPrice, isDrink: true, selectedFlavorName: '' };
     
-    document.querySelectorAll('.addon-checkbox').forEach(cb => cb.checked = false);
     document.getElementById('item-observation').value = '';
     document.getElementById('modal-burger-name').innerText = name;
-    
     document.getElementById('addon-section').style.display = 'none';
     
     const flavorSection = document.getElementById('flavor-section');
@@ -95,7 +120,6 @@ function openDrinkModal(name, defaultPrice, flavorsString = '') {
             let flavorName = flavorData.trim();
             let flavorPrice = defaultPrice;
             
-            // Verifica se possui preço específico usando o separador '|'
             if (flavorName.includes('|')) {
                 const parts = flavorName.split('|');
                 flavorName = parts[0].trim();
@@ -112,7 +136,6 @@ function openDrinkModal(name, defaultPrice, flavorsString = '') {
                 </label>
             `;
             
-            // O primeiro item marcado define o preço inicial do modal
             if (index === 0) {
                 currentItem.basePrice = flavorPrice;
                 currentItem.currentPrice = flavorPrice;
@@ -127,7 +150,6 @@ function openDrinkModal(name, defaultPrice, flavorsString = '') {
     document.getElementById('addon-modal').style.display = 'flex';
 }
 
-// Atualiza o preço da bebida assim que o utilizador seleciona uma nova opção na lista
 function updateDrinkPrice(radioElement) {
     currentItem.basePrice = parseFloat(radioElement.getAttribute('data-price'));
     currentItem.selectedFlavorName = radioElement.value;
@@ -155,7 +177,6 @@ function confirmItemWithAddons() {
     if (currentItem.isDrink) {
         const flavorSection = document.getElementById('flavor-section');
         if (flavorSection.style.display === 'block' && currentItem.selectedFlavorName) {
-            // Se tiver sabor selecionado, o nome final no carrinho exibe de onde veio a bebida
             finalName = `${currentItem.name} (${currentItem.selectedFlavorName})`;
         }
     } else {
@@ -236,16 +257,14 @@ async function calculateDelivery() {
 
     try {
         if (!storeCoords) {
-            storeCoords = await getCoordinates("13484489"); // CEP Garfield Lanches
+            storeCoords = await getCoordinates("13484489"); 
         }
 
         const userCoords = await getCoordinates(cepInput);
-        
         document.getElementById('address').value = userCoords.addressName;
 
         const distance = getDistanceFromLatLonInKm(storeCoords.lat, storeCoords.lon, userCoords.lat, userCoords.lon);
         
-        // REGRA DE FRETE (RAIO LINHA RETA)
         if (distance <= 1.5) { 
             deliveryFee = 5.00;
         } else if (distance <= 7.5) {
@@ -266,7 +285,6 @@ async function calculateDelivery() {
     }
 }
 
-// Fórmula de Haversine
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     const R = 6371; 
     const dLat = deg2rad(lat2-lat1);  
@@ -314,7 +332,6 @@ function openCheckoutModal() {
         `;
     });
 
-    // Certifica-se de que a interface reflete a escolha de entrega/mesa
     if(document.getElementById('orderType')) {
         toggleOrderType(); 
     } else {
@@ -332,7 +349,6 @@ function toggleOrderType() {
         if(deliveryFields) deliveryFields.style.display = 'block';
         if(dineInFields) dineInFields.style.display = 'none';
         
-        // Se já tiver CEP digitado, tenta recalcular o frete ao voltar para a aba
         if (document.getElementById('cep') && document.getElementById('cep').value.length >= 8) {
             calculateDelivery();
         } else {
@@ -342,7 +358,6 @@ function toggleOrderType() {
         if(deliveryFields) deliveryFields.style.display = 'none';
         if(dineInFields) dineInFields.style.display = 'block';
         
-        // Zera o frete porque na mesa não tem cobrança
         deliveryFee = 0; 
         updateCheckoutTotal();
     }
@@ -352,7 +367,6 @@ function updateCheckoutTotal() {
     const totalItems = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const orderType = document.getElementById('orderType') ? document.getElementById('orderType').value : 'entrega';
     
-    // O frete só soma se for entrega
     const currentDeliveryFee = orderType === 'entrega' ? deliveryFee : 0;
     const grandTotal = totalItems + currentDeliveryFee;
     
@@ -392,7 +406,6 @@ function sendToWhatsApp() {
     const payment = document.getElementById('payment').value;
     const troco = document.getElementById('troco').value;
 
-    // Validações dependendo do tipo de pedido
     if (orderType === 'entrega') {
         const address = document.getElementById('address').value;
         const addressNumber = document.getElementById('addressNumber').value;
@@ -448,7 +461,6 @@ function sendToWhatsApp() {
         message += `*Troco para:* R$ ${troco}\n`;
     }
     
-    // Inserção de dados de localização
     if (orderType === 'entrega') {
         const cep = document.getElementById('cep').value;
         const address = document.getElementById('address').value;

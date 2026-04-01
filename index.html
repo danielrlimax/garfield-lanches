@@ -163,21 +163,21 @@
         <div class="menu-item" data-category="gigantes">
             <div class="item-details">
                 <h3>Ki Lanche</h3><p>Maionese, catchup, mostarda, 2 hambúrgueres, alface, tomate, milho, batata palha, 2 ovos, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 60,00</span><button class="btn-add" onclick="openAddonModal('Ki Lanche', 60.00)">Adicionar</button></div>
+                <div class="price-actions"><span class="price">R$ 60,00</span><button class="btn-add" onclick="openAddonModal('Ki Lanche', 60.00, 'gigantes')">Adicionar</button></div>
             </div>
         </div>
 
         <div class="menu-item" data-category="gigantes">
             <div class="item-details">
                 <h3>X-Tudão</h3><p>Maionese, catchup, mostarda, hambúrguer, frango, calabresa, contra-filé, alface, tomate, milho, batata palha, catupiry, ovo, presunto, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 65,00</span><button class="btn-add" onclick="openAddonModal('X-Tudão', 65.00)">Adicionar</button></div>
+                <div class="price-actions"><span class="price">R$ 65,00</span><button class="btn-add" onclick="openAddonModal('X-Tudão', 65.00, 'gigantes')">Adicionar</button></div>
             </div>
         </div>
 
         <div class="menu-item" data-category="gigantes">
             <div class="item-details">
                 <h3>X-Família</h3><p>Maionese, catchup, mostarda, 2 hambúrgueres, frango, calabresa, contra-filé, alface, tomate, milho, batata palha, purê, 2 ovos, presunto, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 70,00</span><button class="btn-add" onclick="openAddonModal('X-Família', 70.00)">Adicionar</button></div>
+                <div class="price-actions"><span class="price">R$ 70,00</span><button class="btn-add" onclick="openAddonModal('X-Família', 70.00, 'gigantes')">Adicionar</button></div>
             </div>
         </div>
 
@@ -393,24 +393,8 @@
             
             <div id="addon-section">
                 <p class="modal-subtitle">Deseja algum acréscimo?</p>
-                <div class="addon-list">
-                    <label class="addon-item">
-                        <input type="checkbox" class="addon-checkbox" value="6.00" data-name="Catupiry" onchange="updateModalPrice()"> 
-                        <div class="addon-details"><span class="addon-name">Catupiry</span><span class="addon-price">+ R$ 6,00</span></div>
-                    </label>
-                    <label class="addon-item">
-                        <input type="checkbox" class="addon-checkbox" value="7.00" data-name="Cheddar" onchange="updateModalPrice()"> 
-                        <div class="addon-details"><span class="addon-name">Cheddar</span><span class="addon-price">+ R$ 7,00</span></div>
-                    </label>
-                    <label class="addon-item">
-                        <input type="checkbox" class="addon-checkbox" value="7.00" data-name="Cream Cheese" onchange="updateModalPrice()"> 
-                        <div class="addon-details"><span class="addon-name">Cream Cheese</span><span class="addon-price">+ R$ 7,00</span></div>
-                    </label>
-                    <label class="addon-item">
-                        <input type="checkbox" class="addon-checkbox" value="6.00" data-name="Purê" onchange="updateModalPrice()"> 
-                        <div class="addon-details"><span class="addon-name">Purê</span><span class="addon-price">+ R$ 6,00</span></div>
-                    </label>
-                </div>
+                <div class="addon-list" id="addon-list-container">
+                    </div>
             </div>
 
             <div id="flavor-section" style="display: none; margin-bottom: 15px;">
