@@ -1,4 +1,4 @@
-const whatsappNumber = "5519997103303"; 
+const whatsappNumber = "5519995219372"; 
 let cart = [];
 const CART_EXPIRATION_MS = 60 * 60 * 1000; 
 
@@ -56,7 +56,7 @@ function filterMenu(category) {
 }
 
 // ==========================================
-// MODAL DE ITENS (Acréscimos e Sabores)
+// MODAL DE ITENS (Acréscimos e Sabores Dinâmicos)
 // ==========================================
 let currentItem = null;
 
@@ -74,8 +74,8 @@ function openAddonModal(name, price) {
     document.getElementById('addon-modal').style.display = 'flex';
 }
 
-function openDrinkModal(name, price, flavorsString = '') {
-    currentItem = { name: name, basePrice: price, currentPrice: price, isDrink: true };
+function openDrinkModal(name, defaultPrice, flavorsString = '') {
+    currentItem = { name: name, basePrice: defaultPrice, currentPrice: defaultPrice, isDrink: true, selectedFlavorName: '' };
     
     document.querySelectorAll('.addon-checkbox').forEach(cb => cb.checked = false);
     document.getElementById('item-observation').value = '';
@@ -90,13 +90,34 @@ function openDrinkModal(name, price, flavorsString = '') {
     if (flavorsString) {
         flavorSection.style.display = 'block';
         const flavors = flavorsString.split(',');
-        flavors.forEach((flavor, index) => {
+        
+        flavors.forEach((flavorData, index) => {
+            let flavorName = flavorData.trim();
+            let flavorPrice = defaultPrice;
+            
+            // Verifica se possui preço específico usando o separador '|'
+            if (flavorName.includes('|')) {
+                const parts = flavorName.split('|');
+                flavorName = parts[0].trim();
+                flavorPrice = parseFloat(parts[1]);
+            }
+
             flavorList.innerHTML += `
                 <label class="addon-item" style="cursor: pointer;">
-                    <input type="radio" name="drink-flavor" value="${flavor.trim()}" class="flavor-radio" ${index === 0 ? 'checked' : ''}>
-                    <div class="addon-details"><span class="addon-name">${flavor.trim()}</span></div>
+                    <input type="radio" name="drink-flavor" value="${flavorName}" data-price="${flavorPrice}" class="flavor-radio" ${index === 0 ? 'checked' : ''} onchange="updateDrinkPrice(this)">
+                    <div class="addon-details">
+                        <span class="addon-name">${flavorName}</span>
+                        <span class="addon-price">R$ ${flavorPrice.toFixed(2).replace('.', ',')}</span>
+                    </div>
                 </label>
             `;
+            
+            // O primeiro item marcado define o preço inicial do modal
+            if (index === 0) {
+                currentItem.basePrice = flavorPrice;
+                currentItem.currentPrice = flavorPrice;
+                currentItem.selectedFlavorName = flavorName;
+            }
         });
     } else {
         flavorSection.style.display = 'none';
@@ -104,6 +125,13 @@ function openDrinkModal(name, price, flavorsString = '') {
 
     updateModalPrice();
     document.getElementById('addon-modal').style.display = 'flex';
+}
+
+// Atualiza o preço da bebida assim que o usuário seleciona uma nova opção na lista
+function updateDrinkPrice(radioElement) {
+    currentItem.basePrice = parseFloat(radioElement.getAttribute('data-price'));
+    currentItem.selectedFlavorName = radioElement.value;
+    updateModalPrice();
 }
 
 function closeAddonModal() {
@@ -126,11 +154,9 @@ function confirmItemWithAddons() {
 
     if (currentItem.isDrink) {
         const flavorSection = document.getElementById('flavor-section');
-        if (flavorSection.style.display === 'block') {
-            const checkedFlavor = document.querySelector('input[name="drink-flavor"]:checked');
-            if (checkedFlavor) {
-                finalName += ` (${checkedFlavor.value})`;
-            }
+        if (flavorSection.style.display === 'block' && currentItem.selectedFlavorName) {
+            // Se tiver sabor selecionado, o nome final no carrinho exibe de onde veio a bebida
+            finalName = `${currentItem.name} (${currentItem.selectedFlavorName})`;
         }
     } else {
         document.querySelectorAll('.addon-checkbox:checked').forEach(cb => {
@@ -215,7 +241,6 @@ async function calculateDelivery() {
 
         const userCoords = await getCoordinates(cepInput);
         
-        // Preenche o campo de endereço bloqueado
         document.getElementById('address').value = userCoords.addressName;
 
         const distance = getDistanceFromLatLonInKm(storeCoords.lat, storeCoords.lon, userCoords.lat, userCoords.lon);
@@ -226,7 +251,7 @@ async function calculateDelivery() {
         } else if (distance <= 7.5) {
             deliveryFee = 15.00;
         } else {
-            deliveryFee = 20.00; // Acima de 7.5km
+            deliveryFee = 20.00; 
         }
 
         infoDiv.innerText = `Frete: R$ ${deliveryFee.toFixed(2).replace('.', ',')} (Aprox. ${distance.toFixed(1)} km)`;
@@ -234,14 +259,14 @@ async function calculateDelivery() {
         
     } catch (error) {
         infoDiv.innerText = "Não foi possível calcular o frete automaticamente. Digite os dados manualmente.";
-        document.getElementById('address').readOnly = false; // Libera digitação
+        document.getElementById('address').readOnly = false; 
         document.getElementById('address').value = "";
         deliveryFee = 0; 
         updateCheckoutTotal();
     }
 }
 
-// Haversine
+// Fórmula de Haversine
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     const R = 6371; 
     const dLat = deg2rad(lat2-lat1);  
