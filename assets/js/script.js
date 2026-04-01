@@ -1,4 +1,4 @@
-const whatsappNumber = "5519997103303"; 
+const whatsappNumber = "5519995219372"; 
 let cart = [];
 const CART_EXPIRATION_MS = 60 * 60 * 1000; 
 
