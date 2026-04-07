@@ -1,6 +1,119 @@
 const whatsappNumber = "5519995219372"; 
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnLf_1axOm0heHogz8sYxV7GhVQDMZo99oDht1SzTi8FBKayakJXtMTi0NB6QVMqd2KCghPRNSACwe/pub?gid=0&single=true&output=csv";
+
 let cart = [];
+let globalMenuItems = []; 
 const CART_EXPIRATION_MS = 60 * 60 * 1000; 
+
+// ==========================================
+// PROCURAR DADOS DA PLANILHA (CSV)
+// ==========================================
+async function loadMenuData() {
+    try {
+        const response = await fetch(csvUrl);
+        const csvText = await response.text();
+        parseCSVAndRender(csvText);
+    } catch (error) {
+        console.error("Erro ao carregar cardápio:", error);
+        document.getElementById('menu-container').innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: red;">Erro ao carregar o cardápio. Verifique a sua ligação.</div>`;
+    }
+}
+
+function parseCSVAndRender(csvText) {
+    const arr = [];
+    let quote = false;
+    let col = 0, row = 0;
+    for (let c = 0; c < csvText.length; c++) {
+        let cc = csvText[c], nc = csvText[c+1];
+        arr[row] = arr[row] || [];
+        arr[row][col] = arr[row][col] || '';
+        if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }
+        if (cc == '"') { quote = !quote; continue; }
+        if (cc == ',' && !quote) { ++col; continue; }
+        if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
+        if (cc == '\n' && !quote) { ++row; col = 0; continue; }
+        if (cc == '\r' && !quote) { ++row; col = 0; continue; }
+        arr[row][col] += cc;
+    }
+
+    globalMenuItems = arr.slice(1).map(row => {
+        return {
+            id: row[0],
+            category: row[1] ? row[1].toLowerCase().trim() : '',
+            name: row[2],
+            description: row[3],
+            price: parseFloat(row[4] ? row[4].replace(',', '.') : 0),
+            pricePrefix: row[5],
+            variations: row[6],
+            imageUrl: row[7]
+        };
+    }).filter(item => item.id && item.name); 
+
+    renderMenu();
+}
+
+function renderMenu() {
+    const container = document.getElementById('menu-container');
+    container.innerHTML = ''; 
+
+    const categoriesOrder = ['hotdogs', 'lanches', 'gigantes', 'bebidas'];
+    const categoryTitles = {
+        'hotdogs': 'HOT DOGS',
+        'lanches': 'LANCHES',
+        'gigantes': 'GIGANTES',
+        'bebidas': 'BEBIDAS'
+    };
+
+    categoriesOrder.forEach(cat => {
+        const catItems = globalMenuItems.filter(i => i.category === cat);
+        if (catItems.length === 0) return;
+
+        container.innerHTML += `
+        <div class="category-divider" data-category="${cat}">
+            <div class="divider-content"><h2>${categoryTitles[cat]}</h2><hr></div>
+        </div>`;
+
+        catItems.forEach(item => {
+            const hasVariations = item.variations && item.variations.trim().length > 0;
+            const btnText = hasVariations ? 'Ver Opções' : 'Adicionar';
+            
+            let priceHtml = '';
+            if (item.pricePrefix && item.pricePrefix.trim() !== '') {
+                priceHtml += `<span class="price-prefix">${item.pricePrefix}</span>`;
+            }
+            priceHtml += `R$ ${item.price.toFixed(2).replace('.', ',')}`;
+
+            let imgHtml = '';
+            if (item.imageUrl && item.imageUrl.trim() !== '') {
+                imgHtml = `<img src="${item.imageUrl}" alt="${item.name}" class="item-image">`;
+            }
+
+            const descriptionHtml = item.description && item.description.trim() !== '' ? `<p>${item.description}</p>` : '';
+
+            container.innerHTML += `
+            <div class="menu-item ${hasVariations ? 'single-price' : ''}" data-category="${cat}">
+                ${imgHtml}
+                <div class="item-details">
+                    <h3>${item.name}</h3>
+                    ${descriptionHtml}
+                    <div class="price-actions">
+                        <span class="price">${priceHtml}</span>
+                        <button class="btn-add" onclick="openItemModal('${item.id}')">${btnText}</button>
+                    </div>
+                </div>
+            </div>`;
+        });
+    });
+
+    const activeCategoryBtn = document.querySelector('.cat-btn.active');
+    if(activeCategoryBtn) {
+        const match = activeCategoryBtn.getAttribute('onclick').match(/'([^']+)'/);
+        if(match) filterMenu(match[1]);
+    }
+}
+
+loadMenuData();
+
 
 // ==========================================
 // CARRINHO E NAVEGAÇÃO
@@ -56,19 +169,30 @@ function filterMenu(category) {
 }
 
 // ==========================================
-// MODAL DE ITENS
+// MODAL DE ITENS DINÂMICOS
 // ==========================================
 let currentItem = null;
 
-function openAddonModal(name, price, category = 'normal') {
-    currentItem = { name: name, basePrice: price, currentPrice: price, isDrink: false, category: category };
+function openItemModal(itemId) {
+    const item = globalMenuItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    if (item.category === 'bebidas') {
+        openDrinkModal(item);
+    } else {
+        openAddonModal(item);
+    }
+}
+
+function openAddonModal(item) {
+    currentItem = { name: item.name, basePrice: item.price, currentPrice: item.price, isDrink: false, category: item.category };
     
     document.getElementById('item-observation').value = '';
-    document.getElementById('modal-burger-name').innerText = name;
+    document.getElementById('modal-burger-name').innerText = item.name;
     document.getElementById('addon-section').style.display = 'block';
     document.getElementById('flavor-section').style.display = 'none';
 
-    const addons = category === 'gigantes' ? [
+    const addons = item.category === 'gigantes' ? [
         { name: 'Catupiry', price: 12.00 },
         { name: 'Cheddar', price: 14.00 },
         { name: 'Cream Cheese', price: 14.00 },
@@ -98,26 +222,26 @@ function openAddonModal(name, price, category = 'normal') {
     document.getElementById('addon-modal').style.display = 'flex';
 }
 
-function openDrinkModal(name, defaultPrice, flavorsString = '') {
-    currentItem = { name: name, basePrice: defaultPrice, currentPrice: defaultPrice, isDrink: true, selectedFlavorName: '' };
+function openDrinkModal(item) {
+    currentItem = { name: item.name, basePrice: item.price, currentPrice: item.price, isDrink: true, selectedFlavorName: '' };
     document.getElementById('item-observation').value = '';
-    document.getElementById('modal-burger-name').innerText = name;
+    document.getElementById('modal-burger-name').innerText = item.name;
     document.getElementById('addon-section').style.display = 'none';
     
     const flavorSection = document.getElementById('flavor-section');
     const flavorList = document.getElementById('flavor-list');
     flavorList.innerHTML = '';
     
-    if (flavorsString) {
+    if (item.variations && item.variations.trim() !== '') {
         flavorSection.style.display = 'block';
-        const flavors = flavorsString.split(',');
+        const flavors = item.variations.split(',');
         flavors.forEach((flavorData, index) => {
             let flavorName = flavorData.trim();
-            let flavorPrice = defaultPrice;
+            let flavorPrice = item.price; 
             if (flavorName.includes('|')) {
                 const parts = flavorName.split('|');
                 flavorName = parts[0].trim();
-                flavorPrice = parseFloat(parts[1]);
+                flavorPrice = parseFloat(parts[1].trim());
             }
             flavorList.innerHTML += `
                 <label class="addon-item" style="cursor: pointer;">
@@ -188,7 +312,7 @@ function confirmItemWithAddons() {
             quantity: 1, 
             addons: selectedAddons,
             observation: observation,
-            isDrink: currentItem.isDrink // Importante para o cálculo de tempo
+            isDrink: currentItem.isDrink 
         });
     }
     
@@ -229,50 +353,42 @@ async function getCoordinates(cep) {
 async function calculateDelivery() {
     let cepInput = document.getElementById('cep').value.replace(/\D/g, '');
     const infoDiv = document.getElementById('frete-info');
+    const addressGroup = document.getElementById('address-details-group');
     
     if (cepInput.length !== 8) {
-        infoDiv.innerText = "Digite um CEP válido.";
+        infoDiv.innerText = "Digite um CEP válido para calcular.";
+        addressGroup.style.display = 'none'; 
         return;
     }
 
-    infoDiv.innerText = "Calculando frete e tempo...";
+    infoDiv.innerText = "A calcular o frete e o tempo...";
     try {
         if (!storeCoords) storeCoords = await getCoordinates("13484489"); 
         const userCoords = await getCoordinates(cepInput);
         document.getElementById('address').value = userCoords.addressName;
         const distance = getDistanceFromLatLonInKm(storeCoords.lat, storeCoords.lon, userCoords.lat, userCoords.lon);
         
-        // Valor do frete
         if (distance <= 1.5) deliveryFee = 5.00;
         else if (distance <= 7.5) deliveryFee = 15.00;
         else deliveryFee = 20.00;
 
-        // --- CÁLCULO DO TEMPO ---
-        // 1 lanche = 15 min. Lanches extras = +5 min cada. (Bebidas ignoradas)
         const totalLanches = cart.filter(item => !item.isDrink).reduce((acc, item) => acc + item.quantity, 0);
-        let timePrep = 0;
-        if (totalLanches > 0) {
-            timePrep = 15 + ((totalLanches - 1) * 5);
-        } else {
-            timePrep = 10; // Caso seja apenas bebidas
-        }
-
-        // +3 minutos por cada km
+        let timePrep = totalLanches > 0 ? 15 + ((totalLanches - 1) * 5) : 10;
         const timeTravel = distance * 3;
         const totalEstimated = timePrep + timeTravel;
 
-        // Criar o intervalo (ex: de -5 min até +20 min do total calculado)
-        const minTime = Math.max(15, Math.floor(totalEstimated - 5));
-        const maxTime = Math.ceil(totalEstimated + 20);
-        estimatedTimeRange = `${minTime} à ${maxTime} minutos`;
+        estimatedTimeRange = `${Math.max(15, Math.floor(totalEstimated - 5))} à ${Math.ceil(totalEstimated + 20)} minutos`;
 
         infoDiv.innerHTML = `Frete: R$ ${deliveryFee.toFixed(2).replace('.', ',')} (Aprox. ${distance.toFixed(1)} km)<br>
                              <span style="color: #2e7d32; font-weight: bold;">Tempo: ${estimatedTimeRange}</span>`;
         
+        addressGroup.style.display = 'block'; 
         updateCheckoutTotal();
     } catch (error) {
-        infoDiv.innerText = "Erro ao calcular automaticamente. Insira os dados abaixo.";
+        infoDiv.innerText = "CEP não localizado. Insira a morada abaixo.";
         document.getElementById('address').readOnly = false;
+        document.getElementById('address').value = '';
+        addressGroup.style.display = 'block'; 
         deliveryFee = 0;
         estimatedTimeRange = "A combinar";
         updateCheckoutTotal();
@@ -299,7 +415,7 @@ function openCheckoutModal() {
             <div class="checkout-item-row">
                 <div style="flex: 1;"><strong>${item.quantity}x</strong> ${item.name}</div>
                 <div style="font-weight: 800;">R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}</div>
-                <button onclick="removeItem(${index})" style="background:#ff4d4d; color:white; border:none; padding:5px 10px; border-radius:5px; margin-left:10px;">X</button>
+                <button onclick="removeItem(${index})">X</button>
             </div>`;
     });
     toggleOrderType();
@@ -310,16 +426,22 @@ function toggleOrderType() {
     const orderType = document.getElementById('orderType').value;
     const deliveryFields = document.getElementById('delivery-fields');
     const dineInFields = document.getElementById('dine-in-fields');
+    const addressGroup = document.getElementById('address-details-group');
+    
     if (orderType === 'entrega') {
         deliveryFields.style.display = 'block'; 
         dineInFields.style.display = 'none';
-        if (document.getElementById('cep').value.length >= 8) calculateDelivery();
-        else updateCheckoutTotal();
+        if (document.getElementById('cep').value.length >= 8) {
+            calculateDelivery();
+        } else {
+            addressGroup.style.display = 'none'; 
+            updateCheckoutTotal();
+        }
     } else {
         deliveryFields.style.display = 'none'; 
         dineInFields.style.display = 'block';
         deliveryFee = 0; 
-        estimatedTimeRange = "15 à 30 minutos"; // Tempo fixo para mesa
+        estimatedTimeRange = "15 à 30 minutos"; 
         updateCheckoutTotal();
     }
 }
@@ -351,7 +473,7 @@ function sendToWhatsApp() {
     const troco = document.getElementById('troco').value;
 
     let message = `*🍔 NOVO PEDIDO - GARFIELD LANCHES*\n`;
-    message += `*TEMPO ESTIMADO:* ${estimatedTimeRange}\n`; // Adicionado o tempo no topo
+    message += `*TEMPO ESTIMADO:* ${estimatedTimeRange}\n`; 
     message += `---------------------------------\n`;
 
     cart.forEach(item => {
@@ -370,7 +492,10 @@ function sendToWhatsApp() {
     if (payment === 'Dinheiro' && troco) message += `*Troco para:* ${troco}\n`;
 
     if (orderType === 'entrega') {
-        message += `\n*Endereço:* ${document.getElementById('address').value}, Nº ${document.getElementById('addressNumber').value}`;
+        message += `\n*Morada:* ${document.getElementById('address').value}, Nº ${document.getElementById('addressNumber').value}`;
+        if (document.getElementById('addressComplement').value) {
+            message += ` (${document.getElementById('addressComplement').value})`;
+        }
     } else {
         message += `\n*Mesa:* ${document.getElementById('tableNumber').value}`;
     }

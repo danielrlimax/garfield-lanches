@@ -1,12 +1,15 @@
 :root {
-    --bg-color: #f8f9fa; 
-    --card-bg: #ffffff;  
-    --primary-color: #f28500; 
+    /* Cores ajustadas para um dark mode mais sofisticado (estilo Apple/Discord) */
+    --bg-color: #0f0f11; 
+    --card-bg: #1c1c1e;  
+    --primary-color: #ff8c00; 
+    --primary-hover: #e67e00;
     --secondary-color: #ffcc00; 
-    --text-main: #333333; 
-    --text-muted: #666666; 
-    --border-color: #e0e0e0;
+    --text-main: #fcfcfc; 
+    --text-muted: #8e8e93; 
+    --border-color: rgba(255, 255, 255, 0.08); 
     --whatsapp: #25d366;
+    --whatsapp-hover: #20bd5a;
 }
 
 * {
@@ -26,35 +29,44 @@ body {
 
 /* ================= HEADER ================= */
 .menu-header {
-    background-color: var(--card-bg);
+    background-color: rgba(28, 28, 30, 0.85); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px);
     padding: 15px;
     text-align: center;
-    border-bottom: 3px solid var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
     position: fixed; 
     top: 0;
     left: 0;
     width: 100%;
     height: 80px; 
     z-index: 110;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    transition: all 0.3s ease;
 }
 
 .logo {
     font-size: 1.6rem;
     font-weight: 800;
     letter-spacing: 1px;
-    color: #000;
+    color: var(--text-main);
 }
-.logo .highlight { color: var(--primary-color); }
+
+.logo .highlight { 
+    color: var(--primary-color); 
+    text-shadow: 0 0 10px rgba(255, 140, 0, 0.3); 
+}
+
 .tagline {
     font-size: 0.8rem;
     color: var(--text-muted);
     margin-top: 4px;
     text-transform: uppercase;
     font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 /* ============ CATEGORIAS ============ */
@@ -63,35 +75,46 @@ body {
     overflow-x: auto;
     padding: 12px 15px;
     gap: 10px;
-    background-color: var(--card-bg);
+    background-color: rgba(15, 15, 17, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
     position: fixed; 
     top: 80px; 
     left: 0;
     width: 100%;
     height: 60px; 
     z-index: 100;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     scrollbar-width: none; 
 }
+
 .categories::-webkit-scrollbar { display: none; }
 
 .cat-btn {
     padding: 10px 22px;
     border-radius: 25px;
     border: 1px solid var(--border-color);
-    background: var(--bg-color);
-    color: var(--text-main);
+    background: var(--card-bg);
+    color: var(--text-muted);
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.3s ease;
 }
+
+.cat-btn:hover {
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
 .cat-btn.active {
-    background: var(--primary-color);
+    background: linear-gradient(135deg, #ff9d2e 0%, #ff8c00 100%);
     color: #fff;
-    border-color: var(--primary-color);
+    border-color: transparent;
     transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4); 
 }
 
 /* ============ CORPO DO CARDÁPIO ============ */
@@ -105,48 +128,57 @@ body {
 }
 
 @media (min-width: 768px) {
-    .menu-container { 
-        grid-template-columns: repeat(2, 1fr); 
-    }
+    .menu-container { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 1024px) {
-    .menu-container { 
-        grid-template-columns: repeat(3, 1fr); 
-    }
+    .menu-container { grid-template-columns: repeat(3, 1fr); }
 }
 
 .category-divider {
     grid-column: 1 / -1; 
-    margin: 15px 0 5px 0;
+    margin: 25px 0 10px 0;
     scroll-margin-top: 150px; 
 }
+
 .divider-content { 
     display: flex; 
     align-items: center; 
     gap: 15px;
 }
+
 .divider-content h2 {
     font-size: 1.2rem; 
     color: var(--text-main); 
     font-weight: 800; 
     white-space: nowrap; 
     text-transform: uppercase;
+    letter-spacing: 1px;
 }
+
 .divider-content hr { 
     flex: 1; 
     border: 0; 
-    border-top: 2px solid var(--primary-color); 
+    border-top: 1px solid var(--border-color); 
 }
 
 /* ============ ITENS DO MENU E IMAGENS ============ */
 .menu-item {
     background: var(--card-bg);
-    border-radius: 12px;
+    border-radius: 16px; 
     overflow: hidden; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+@media (hover: hover) {
+    .menu-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(255, 140, 0, 0.08);
+        border-color: rgba(255, 140, 0, 0.3);
+    }
 }
 
 .item-image {
@@ -157,7 +189,7 @@ body {
 }
 
 .item-details {
-    padding: 15px; 
+    padding: 18px; 
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -174,7 +206,7 @@ body {
     font-size: 0.9rem; 
     color: var(--text-muted); 
     margin-bottom: 15px; 
-    line-height: 1.5; 
+    line-height: 1.6; 
     flex-grow: 1; 
 }
 
@@ -195,6 +227,7 @@ body {
     flex-direction: column; 
     line-height: 1.1; 
 }
+
 .price-prefix { 
     font-size: 0.75rem; 
     color: var(--text-muted); 
@@ -203,60 +236,88 @@ body {
 }
 
 .btn-add {
-    background: var(--primary-color); 
-    color: #fff; 
-    border: none; 
-    padding: 10px 20px; 
+    background: rgba(255, 140, 0, 0.1); 
+    color: var(--primary-color); 
+    border: 1px solid var(--primary-color); 
+    padding: 8px 18px; 
     border-radius: 8px; 
     font-weight: 700; 
     cursor: pointer; 
-    transition: 0.2s;
+    transition: all 0.2s;
+}
+
+.btn-add:hover {
+    background: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(255, 140, 0, 0.3);
 }
 
 .btn-add:active { 
     transform: scale(0.95); 
 }
 
-/* ============ FOOTER ============ */
+/* ============ FOOTER (CARRINHO FLUTUANTE) ============ */
 .cart-footer {
     position: fixed; 
-    bottom: 0; 
-    left: 0; 
-    width: 100%; 
-    background: #fff; 
-    padding: 15px 20px; 
+    bottom: 20px; 
+    left: 50%; 
+    transform: translateX(-50%);
+    width: calc(100% - 40px); 
+    max-width: 500px;
+    background: rgba(28, 28, 30, 0.95); 
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 12px 20px; 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    border-top: 2px solid var(--primary-color); 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 20px; 
     z-index: 1000;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.05); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(255, 140, 0, 0.2); 
     cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+.cart-footer:active {
+    transform: translate(-50%, 2px);
+}
+
+.cart-info {
+    display: flex;
+    flex-direction: column;
+}
+
 .cart-info p { 
     font-weight: 800; 
-    font-size: 1.25rem; 
+    font-size: 1.15rem; 
     color: var(--text-main); 
 }
 
 .cart-info small { 
     color: var(--primary-color); 
-    font-size: 1rem; 
+    font-size: 0.95rem; 
     font-weight: 700; 
 }
 
 .btn-order { 
-    background: var(--primary-color); 
+    background: linear-gradient(135deg, #ff9d2e 0%, #ff8c00 100%);
     color: #fff; 
     border: none; 
     padding: 12px 24px; 
-    border-radius: 8px; 
+    border-radius: 30px; 
     font-weight: 700; 
     font-size: 1rem; 
     cursor: pointer; 
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+    transition: transform 0.2s;
 }
 
-/* ============ MODAIS ============ */
+.btn-order:active {
+    transform: scale(0.95);
+}
+
+/* ============ MODAIS E TELA DE CHECKOUT ============ */
 .modal { 
     display: none; 
     position: fixed; 
@@ -265,10 +326,11 @@ body {
     top: 0; 
     width: 100%; 
     height: 100%; 
-    background-color: rgba(0, 0, 0, 0.6); 
+    background-color: rgba(0, 0, 0, 0.75); 
     align-items: center; 
     justify-content: center; 
-    backdrop-filter: blur(3px); 
+    backdrop-filter: blur(5px); 
+    -webkit-backdrop-filter: blur(5px);
 }
 
 .modal-content { 
@@ -276,9 +338,10 @@ body {
     width: 90%; 
     max-width: 450px; 
     padding: 25px; 
-    border-radius: 12px; 
+    border-radius: 16px; 
     position: relative; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+    border: 1px solid var(--border-color);
     max-height: 90vh; 
     overflow-y: auto;
 }
@@ -291,7 +354,10 @@ body {
     font-size: 28px; 
     font-weight: bold; 
     cursor: pointer; 
+    transition: color 0.2s;
 }
+
+.close-modal:hover { color: var(--text-main); }
 
 #modal-burger-name { 
     color: var(--text-main); 
@@ -309,31 +375,32 @@ body {
     display: flex; 
     flex-direction: column; 
     gap: 10px; 
-    max-height: 200px; 
+    max-height: 220px; 
     overflow-y: auto; 
+    padding-right: 5px;
 }
 
 .addon-item { 
     display: flex; 
     align-items: center; 
-    gap: 10px; 
+    gap: 12px; 
     background: var(--bg-color); 
     border: 1px solid var(--border-color); 
-    padding: 12px; 
-    border-radius: 8px; 
+    padding: 12px 15px; 
+    border-radius: 10px; 
     cursor: pointer; 
+    transition: background 0.2s, border-color 0.2s;
 }
 
-.addon-checkbox { 
-    width: 20px; 
-    height: 20px; 
+.addon-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.addon-checkbox, .flavor-radio { 
+    width: 18px; 
+    height: 18px; 
     accent-color: var(--primary-color); 
-}
-
-.flavor-radio { 
-    width: 20px; 
-    height: 20px; 
-    accent-color: var(--primary-color);
     cursor: pointer; 
 }
 
@@ -343,20 +410,10 @@ body {
     width: 100%; 
 }
 
-.addon-name { 
-    font-weight: 600; 
-    color: var(--text-main); 
-}
+.addon-name { font-weight: 600; color: var(--text-main); }
+.addon-price { color: var(--primary-color); font-weight: 700; }
 
-.addon-price { 
-    color: var(--primary-color); 
-    font-weight: 700; 
-}
-
-.observation-section { 
-    margin-top: 20px; 
-}
-
+.observation-section { margin-top: 20px; }
 .observation-section label { 
     color: var(--text-main); 
     font-weight: 600; 
@@ -368,78 +425,162 @@ body {
 .observation-section textarea { 
     width: 100%; 
     padding: 12px; 
-    border-radius: 8px; 
+    border-radius: 10px; 
     border: 1px solid var(--border-color); 
     background: var(--bg-color); 
     color: var(--text-main); 
     resize: none; 
     font-family: inherit; 
     font-size: 0.95rem; 
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.observation-section textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.2);
 }
 
 .btn-confirm { 
     width: 100%; 
-    background: var(--primary-color); 
+    background: linear-gradient(135deg, #ff9d2e 0%, #ff8c00 100%);
     color: #fff; 
     border: none; 
     padding: 15px; 
-    border-radius: 8px; 
+    border-radius: 10px; 
     font-weight: 700; 
     font-size: 1.1rem; 
     cursor: pointer; 
     margin-top: 20px; 
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
+
+.btn-confirm:active { transform: scale(0.98); }
 
 .btn-whatsapp { 
-    background: var(--whatsapp); 
+    background: linear-gradient(135deg, #28e06c 0%, #25d366 100%); 
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
 }
 
+/* --- ESTILOS ESPECÍFICOS DO CARRINHO --- */
 .checkout-items-list { 
-    max-height: 200px; 
+    max-height: 250px; 
     overflow-y: auto; 
     margin-bottom: 15px; 
+    padding-right: 8px;
 }
 
 .checkout-item-row { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    margin-bottom: 10px; 
-    background: var(--bg-color); 
-    padding: 12px; 
-    border-radius: 8px; 
-    border: 1px solid var(--border-color); 
+    margin-bottom: 12px; 
+    background: rgba(255, 255, 255, 0.03); 
+    padding: 15px; 
+    border-radius: 12px; 
+    border: 1px solid rgba(255, 255, 255, 0.05); 
+    transition: background 0.2s;
+}
+
+.checkout-item-row:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.checkout-item-row button {
+    background: rgba(255, 77, 77, 0.1) !important;
+    color: #ff4d4d !important;
+    border: 1px solid rgba(255, 77, 77, 0.2) !important;
+    padding: 0 !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    font-weight: 800 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    transition: all 0.2s !important;
+}
+
+.checkout-item-row button:hover {
+    background: #ff4d4d !important;
+    color: #fff !important;
 }
 
 .checkout-divider { 
-    border-color: var(--border-color); 
-    margin-bottom: 15px; 
+    border: none;
+    border-top: 1px dashed var(--border-color); 
+    margin: 20px 0; 
 }
 
 .checkout-total-text { 
-    text-align: right; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 10px; 
     color: var(--text-main); 
-    font-size: 1.2rem; 
+    font-size: 1.1rem; 
 }
 
+.checkout-total-text:last-of-type {
+    background: rgba(255, 140, 0, 0.08);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 140, 0, 0.2);
+    margin-top: 15px;
+    margin-bottom: 25px;
+    font-size: 1.25rem;
+}
+
+/* ==========================================
+   FORMULÁRIOS DO CARRINHO (CORES CORRIGIDAS)
+   ========================================== */
 .checkout-form label { 
     display: block; 
     margin-top: 15px; 
     margin-bottom: 5px; 
-    color: var(--text-main); 
+    color: var(--text-muted); 
     font-weight: 600; 
-    font-size: 0.9rem; 
+    font-size: 0.85rem; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .checkout-form input, .checkout-form select { 
     width: 100%; 
-    padding: 12px; 
-    border-radius: 8px; 
+    padding: 14px; 
+    border-radius: 10px; 
     border: 1px solid var(--border-color); 
-    background: var(--card-bg); 
+    background: rgba(255, 255, 255, 0.04); 
     color: var(--text-main); 
     font-size: 1rem; 
+    transition: all 0.3s;
+}
+
+.checkout-form select.highlight-select {
+    border-color: var(--primary-color);
+    background: rgba(255, 140, 0, 0.05);
+    font-weight: bold;
+}
+
+.checkout-form input:focus, .checkout-form select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.checkout-form input.readonly-input {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    border-style: dashed;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .troco-container { 
@@ -447,12 +588,35 @@ body {
     margin-top: 10px; 
 }
 
-/* CORREÇÃO DE IMAGENS */
-
-.menu-item img[alt="Gatorade"]{
-    object-position: center top;
+/* ==========================================
+   BARRA DE ROLAGEM GERAL ELEGANTE (SCROLLBAR)
+   ========================================== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02); 
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 140, 0, 0.3); 
+    border-radius: 10px;
+    transition: background 0.3s;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 140, 0, 0.7); 
 }
 
-.menu-item img[alt="Energético Monster"]{
-    object-position: center 85%;
+/* Correções de Imagens */
+.menu-item img[alt="Gatorade"]{ object-position: center top; }
+.menu-item img[alt="Energético Monster"]{ object-position: center 85%; }
+
+/* ==========================================
+   CORREÇÃO DAS OPÇÕES DO MENU DE SELEÇÃO
+   ========================================== */
+.checkout-form select option {
+    background-color: #1c1c1e; /* Fundo escuro combinando com o modal */
+    color: #fcfcfc; /* Texto branco para dar contraste */
+    font-weight: 600;
 }

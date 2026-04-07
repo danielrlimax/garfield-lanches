@@ -25,367 +25,11 @@
         <button class="cat-btn" onclick="filterMenu('bebidas')">Bebidas</button>
     </nav>
 
-    <main class="menu-container">
-
-        <div class="category-divider" data-category="hotdogs">
-            <div class="divider-content"><h2>HOT DOGS</h2><hr></div>
+    <main class="menu-container" id="menu-container">
+        <div id="loading-state" style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--primary-color);">
+            <h2 style="font-size: 1.5rem; margin-bottom: 10px;">🍔 A carregar o cardápio...</h2>
+            <p style="color: var(--text-muted);">A procurar os lanches fresquinhos direto da chapa!</p>
         </div>
-
-        <div class="menu-item" data-category="hotdogs">
-            <div class="item-details">
-                <h3>Cachorro Quente Simples</h3><p>Maionese, catchup, mostarda, purê, salsicha, alface, milho, batata palha e vinagrete.</p>
-                <div class="price-actions"><span class="price">R$ 24,00</span><button class="btn-add" onclick="openAddonModal('Cachorro Quente Simples', 24.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="hotdogs">
-            <div class="item-details">
-                <h3>Cachorro Quente Completo</h3><p>Maionese, catchup, mostarda, purê, salsicha, alface, milho, batata palha, vinagrete e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 27,00</span><button class="btn-add" onclick="openAddonModal('Cachorro Quente Completo', 27.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="hotdogs">
-            <div class="item-details">
-                <h3>Cachorro Quente Frango Especial</h3><p>Maionese, catchup, mostarda, frango, salsicha, alface, milho, batata palha, catupiry e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 28,00</span><button class="btn-add" onclick="openAddonModal('Hot Dog Frango Especial', 28.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-
-        <div class="category-divider" data-category="lanches">
-            <div class="divider-content"><h2>LANCHES</h2><hr></div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>Misto Quente</h3><p>Maionese, catchup, mostarda, tomate, orégano, batata palha, fatias de mussarela e presunto.</p>
-                <div class="price-actions"><span class="price">R$ 27,00</span><button class="btn-add" onclick="openAddonModal('Misto Quente', 27.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Salada</h3><p>Maionese, catchup, mostarda, hambúrguer, alface, milho, tomate e mussarela.</p>
-                <div class="price-actions"><span class="price">R$ 27,00</span><button class="btn-add" onclick="openAddonModal('X-Salada', 27.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Burguer</h3><p>Maionese, catchup, mostarda, hambúrguer, alface, milho, tomate, batata palha, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 28,00</span><button class="btn-add" onclick="openAddonModal('X-Burguer', 28.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Frango</h3><p>Maionese, catchup, mostarda, frango, alface, milho, batata palha e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 28,00</span><button class="btn-add" onclick="openAddonModal('X-Frango', 28.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Salada Egg</h3><p>Maionese, catchup, mostarda, hambúrguer, alface, milho, tomate, ovo e mussarela.</p>
-                <div class="price-actions"><span class="price">R$ 28,00</span><button class="btn-add" onclick="openAddonModal('X-Salada Egg', 28.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Burguer Egg</h3><p>Maionese, catchup, mostarda, hambúrguer, alface, tomate, milho, batata palha, ovo, catupiry, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 30,00</span><button class="btn-add" onclick="openAddonModal('X-Burguer Egg', 30.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Frango Egg</h3><p>Maionese, catchup, mostarda, frango, ovo, alface, milho, batata palha, catupiry e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 30,00</span><button class="btn-add" onclick="openAddonModal('X-Frango Egg', 30.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>Americano</h3><p>Maionese, catchup, mostarda, hambúrguer, ovo, alface, milho, tomate, catupiry e mussarela.</p>
-                <div class="price-actions"><span class="price">R$ 29,00</span><button class="btn-add" onclick="openAddonModal('Americano', 29.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Bacon</h3><p>Maionese, catchup, mostarda, hambúrguer, alface, tomate, milho, batata palha, presunto, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 32,00</span><button class="btn-add" onclick="openAddonModal('X-Bacon', 32.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Calabresa</h3><p>Maionese, catchup, mostarda, calabresa, alface, milho, batata palha, cebola e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 32,00</span><button class="btn-add" onclick="openAddonModal('X-Calabresa', 32.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>Bauru (Pão Baguete)</h3><p>Contra filé, alface, tomate, mussarela, batata palha e cebola.</p>
-                <div class="price-actions"><span class="price">R$ 37,00</span><button class="btn-add" onclick="openAddonModal('Bauru', 37.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>Vegetariano (Pão Baguete)</h3><p>Maionese, catchup, mostarda, batata palha, milho, mussarela, ovo, vinagrete, alface e purê.</p>
-                <div class="price-actions"><span class="price">R$ 30,00</span><button class="btn-add" onclick="openAddonModal('Vegetariano', 30.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>X-Tudo</h3><p>Maionese, catchup, mostarda, hambúrguer, frango, alface, tomate, milho, batata palha, ovo, catupiry, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 37,00</span><button class="btn-add" onclick="openAddonModal('X-Tudo', 37.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="lanches">
-            <div class="item-details">
-                <h3>Hambúrguer Duplo</h3><p>2 hambúrgueres, bacon e cheddar.</p>
-                <div class="price-actions"><span class="price">R$ 32,00</span><button class="btn-add" onclick="openAddonModal('Hambúrguer Duplo', 32.00)">Adicionar</button></div>
-            </div>
-        </div>
-
-
-        <div class="category-divider" data-category="gigantes">
-            <div class="divider-content"><h2>GIGANTES</h2><hr></div>
-        </div>
-
-        <div class="menu-item" data-category="gigantes">
-            <div class="item-details">
-                <h3>Ki Lanche</h3><p>Maionese, catchup, mostarda, 2 hambúrgueres, alface, tomate, milho, batata palha, 2 ovos, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 60,00</span><button class="btn-add" onclick="openAddonModal('Ki Lanche', 60.00, 'gigantes')">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="gigantes">
-            <div class="item-details">
-                <h3>X-Tudão</h3><p>Maionese, catchup, mostarda, hambúrguer, frango, calabresa, contra-filé, alface, tomate, milho, batata palha, catupiry, ovo, presunto, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 65,00</span><button class="btn-add" onclick="openAddonModal('X-Tudão', 65.00, 'gigantes')">Adicionar</button></div>
-            </div>
-        </div>
-
-        <div class="menu-item" data-category="gigantes">
-            <div class="item-details">
-                <h3>X-Família</h3><p>Maionese, catchup, mostarda, 2 hambúrgueres, frango, calabresa, contra-filé, alface, tomate, milho, batata palha, purê, 2 ovos, presunto, mussarela e bacon.</p>
-                <div class="price-actions"><span class="price">R$ 70,00</span><button class="btn-add" onclick="openAddonModal('X-Família', 70.00, 'gigantes')">Adicionar</button></div>
-            </div>
-        </div>
-
-
-        <div class="category-divider" data-category="bebidas">
-            <div class="divider-content"><h2>BEBIDAS</h2><hr></div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Refrigerantes 2 Litros</h3>
-                <div class="price-actions">
-                    <span class="price"><span class="price-prefix">A partir de</span>R$ 10,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Refrigerantes 2 Litros', 10.00, 'Sukita Laranja 2L|10.00, Sukita Uva 2L|10.00, Guaraná Antarctica 2L|14.00, Pepsi 2 L|14.00, Sprite 2L|14.00, Fanta Laranja 2L|14.00, Fanta Uva 2 L|14.00, Coca 2L|17.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Refrigerantes 2 Litros Retornável</h3>
-                <div class="price-actions">
-                    <span class="price"><span class="price-prefix">A partir de</span>R$ 10,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Refrigerantes 2 Litros Retornável', 10.00, 'Coca-cola 2L|11.00, Coca-cola Zero 2L|11.00, Fanta Laranja 2L|11.00, Fanta Uva 2L|11.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Refrigerantes de 1 Litro</h3>
-                <div class="price-actions">
-                    <span class="price"><span class="price-prefix">A partir de</span>R$ 10,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Refrigerantes de 1 Litro', 10.00, 'Guaraná 1L|10.00, Coca-cola Zero 1L|13.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div> 
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Coca-cola 1L Retornável</h3>
-                <div class="price-actions">
-                    <span class="price"><span class="price-prefix"></span>R$ 10,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Coca-cola 1L Retornável', 10.00)">Ver Opções</button>
-                </div>
-            </div>
-        </div> 
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Refrigerante 600 ml</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 9,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Refrigerante 600 ml', 9.00, 'Coca-cola 600 ml|9.00, Guaraná 600 ml|9.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Guaraná 600 Retornável</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 9,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Guaraná 600 Retornável', 9.00, 'Itubaína 600 ml|9.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Refrigerante Lata</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 7,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Refrigerante Lata', 7.00, 'Coca-cola Lata|7.00, Coca-cola Lata Zero|7.00, Guaraná Antarctica Lata|7.00, Pepsi Lata|7.00, Sprite Lata|7.00, Schweppes Lata|7.00, Fanta Laranja Lata|7.00, Fanta Uva Lata|7.00, Água Tônica Lata|7.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Cerveja Lata</h3>
-                <div class="price-actions">
-                    <span class="price"><span class="price-prefix">A partir de</span>R$ 7,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Cerveja Lata', 7.00, 'Brahma Lata|7.00, Skol Lata|7.00, Antarctica Lata|7.00, Amstel Lata|7.00, Heineken Lata|9.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Cervejas Long Neck</h3>
-                <div class="price-actions">
-                    <span class="price"><span class="price-prefix">A partir de</span>R$ 10,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Cervejas Long Neck', 10.00, 'Heineken Long Neck|10.00, Stella Long Neck|10.00, Corona Long Neck|12.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>51 Ice Long</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 10,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('51 Ice Long', 10.00)">Adicionar</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>KS Retornável</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 6,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('KS Retornável', 6.00, 'Coca-cola 290 ml|6.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Refrigerante Caçulinha Descartável</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 4,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Refrigerante Caçulinha Descartável', 4.00, 'Coca-cola 200 ml|4.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Cerveja Litrão</h3>
-                <div class="price-actions">
-                    <span class="price"><span class="price-prefix">A partir de</span>R$ 15,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Cerveja Litrão', 15.00, 'Brahma Litrão|15.00, Skol Litrão|15.00, Antarctica Litrão|15.00, Original Litrão|18.00, Budweiser Litrão|18.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Cervejas Garrafas 600 ml</h3>
-                <div class="price-actions">
-                    <span class="price"><span class="price-prefix">A partir de</span>R$ 13,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Cervejas Garrafas 600 ml', 13.00, 'Skol 600 ml|13.00, Brahma 600 ml|13.00, Antarctica 600 ml|13.00, Original 600 ml|15.00, Heineken 600 ml|20.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Sucos Betel 500 ml</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 10,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Sucos Betel 500 ml', 10.00, 'Laranja 500 ml|10.00, Laranja com Maracujá 500 ml|10.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Gatorade</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 10,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Gatorade', 10.00)">Adicionar</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Energético Monster</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 12,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Energético Monster', 12.00, 'Monster Sabor Natural|12.00, Monster Sabor Mango Loco|12.00, Monster Sabor Melancia|12.00, Monster Sabor Frutas Vermelhas|12.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Águas 500 ml</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 4,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Águas 500 ml', 4.00, 'Água Natural 500 ml|4.00, Água Natural 500 ml com Gás|4.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>H2O Limoneto</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 7,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('H2O Limoneto', 7.00)">Adicionar</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item single-price" data-category="bebidas">
-            <div class="item-details">
-                <h3>Del Valle Sucos Latas</h3>
-                <div class="price-actions">
-                    <span class="price">R$ 7,00</span>
-                    <button class="btn-add" onclick="openDrinkModal('Del Valle Sucos Latas', 7.00, 'Del Valle Uva|7.00, Del Valle Manga|7.00, Del Valle Maracujá|7.00, Del Valle Pêssego|7.00')">Ver Opções</button>
-                </div>
-            </div>
-        </div>
-
     </main>
 
     <footer class="cart-footer" onclick="openCheckoutModal()">
@@ -403,14 +47,12 @@
             
             <div id="addon-section">
                 <p class="modal-subtitle">Deseja algum acréscimo?</p>
-                <div class="addon-list" id="addon-list-container">
-                    </div>
+                <div class="addon-list" id="addon-list-container"></div>
             </div>
 
             <div id="flavor-section" style="display: none; margin-bottom: 15px;">
                 <p class="modal-subtitle" style="margin-bottom: 10px; color: var(--text-main); font-weight: 600;">Escolha o sabor:</p>
-                <div id="flavor-list" class="addon-list">
-                    </div>
+                <div id="flavor-list" class="addon-list"></div>
             </div>
 
             <div class="observation-section">
@@ -427,46 +69,46 @@
     <div id="checkout-modal" class="modal">
         <div class="modal-content checkout-content">
             <span class="close-modal" onclick="closeCheckoutModal()">&times;</span>
-            <h2>Seu Pedido</h2>
+            <h2>O Seu Pedido</h2>
             
-            <div id="checkout-items" class="checkout-items-list">
-                </div>
+            <div id="checkout-items" class="checkout-items-list"></div>
             <hr class="checkout-divider">
-            <h3 class="checkout-total-text">Subtotal: R$ <span id="checkout-subtotal">0,00</span></h3>
-            <h3 class="checkout-total-text" style="color: var(--primary-color);">Total Final: R$ <span id="checkout-final-total">0,00</span></h3>
+            <h3 class="checkout-total-text">Subtotal: <span>R$ <span id="checkout-subtotal">0,00</span></span></h3>
+            <h3 class="checkout-total-text" style="color: var(--primary-color);">Total Final: <span>R$ <span id="checkout-final-total">0,00</span></span></h3>
 
             <div class="checkout-form">
-                
                 <label>Tipo de Pedido:</label>
-                <select id="orderType" onchange="toggleOrderType()" style="background-color: var(--card-bg); font-weight: bold; border-color: var(--primary-color);">
+                <select id="orderType" onchange="toggleOrderType()" class="highlight-select">
                     <option value="entrega">🛵 Entrega (Delivery)</option>
                     <option value="mesa">🍽️ No Estabelecimento (Mesa)</option>
                 </select>
 
                 <div id="delivery-fields">
-                    <label>1. Calcular Frete (Insira seu CEP):</label>
+                    <label>1. Calcular Frete (Insira o seu CEP):</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="cep" placeholder="Ex: 13484-489" maxlength="9" onblur="calculateDelivery()" style="flex: 1;">
-                        <button type="button" class="btn-add" onclick="calculateDelivery()" style="padding: 0 15px;">Buscar</button>
+                        <button type="button" class="btn-add" onclick="calculateDelivery()" style="padding: 0 15px; border-radius: 10px;">Buscar</button>
                     </div>
                     <div id="frete-info" style="color: var(--primary-color); font-weight: bold; margin-top: 8px; font-size: 0.9rem;"></div>
 
-                    <label>2. Endereço (Preenchimento automático):</label>
-                    <input type="text" id="address" placeholder="Rua, Bairro, Cidade" readonly style="background-color: #eee; cursor: not-allowed; color: #555;">
+                    <div id="address-details-group" style="display: none; animation: fadeIn 0.4s ease;">
+                        <label>2. Morada de Entrega:</label>
+                        <input type="text" id="address" placeholder="Rua, Bairro, Cidade" readonly class="readonly-input">
 
-                    <div style="display: flex; gap: 10px;">
-                        <div style="flex: 1;">
-                            <label>Número:</label>
-                            <input type="text" id="addressNumber" placeholder="Ex: 123">
-                        </div>
-                        <div style="flex: 2;">
-                            <label>Complemento:</label>
-                            <input type="text" id="addressComplement" placeholder="Apto, Casa 2...">
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <label>Número:</label>
+                                <input type="text" id="addressNumber" placeholder="Ex: 123">
+                            </div>
+                            <div style="flex: 2;">
+                                <label>Complemento:</label>
+                                <input type="text" id="addressComplement" placeholder="Opcional">
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="dine-in-fields" style="display: none; background: #fff8eb; padding: 10px; border-radius: 8px; border: 1px dashed var(--primary-color); margin-top: 15px;">
+                <div id="dine-in-fields" style="display: none; background: rgba(255, 140, 0, 0.05); padding: 15px; border-radius: 10px; border: 1px dashed var(--primary-color); margin-top: 15px;">
                     <label style="margin-top: 0; color: var(--primary-color);">Qual é o número da sua mesa?</label>
                     <input type="text" id="tableNumber" placeholder="Ex: Mesa 04">
                 </div>
