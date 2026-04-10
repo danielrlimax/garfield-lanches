@@ -332,6 +332,7 @@ function updateCartUI() {
 // CÁLCULO DE FRETE E TEMPO ESTIMADO
 // ==========================================
 let deliveryFee = 0;
+let consultFee = false; // Flag para saber se precisamos combinar o frete
 let estimatedTimeRange = ""; 
 let storeCoords = null; 
 
@@ -368,19 +369,31 @@ async function calculateDelivery() {
         document.getElementById('address').value = userCoords.addressName;
         const distance = getDistanceFromLatLonInKm(storeCoords.lat, storeCoords.lon, userCoords.lat, userCoords.lon);
         
-        if (distance <= 1.5) deliveryFee = 5.00;
-        else if (distance <= 7.5) deliveryFee = 15.00;
-        else deliveryFee = 20.00;
+        consultFee = false;
+        
+        if (distance <= 2.0) deliveryFee = 5.00;
+        else if (distance <= 4.0) deliveryFee = 8.00;
+        else if (distance <= 6.0) deliveryFee = 10.00;
+        else if (distance <= 8.0) deliveryFee = 14.00;
+        else {
+            deliveryFee = 0;
+            consultFee = true; // Passou de 8km
+        }
 
         const totalLanches = cart.filter(item => !item.isDrink).reduce((acc, item) => acc + item.quantity, 0);
         let timePrep = totalLanches > 0 ? 15 + ((totalLanches - 1) * 5) : 10;
         const timeTravel = distance * 3;
         const totalEstimated = timePrep + timeTravel;
 
-        estimatedTimeRange = `${Math.max(15, Math.floor(totalEstimated - 5))} à ${Math.ceil(totalEstimated + 20)} minutos`;
+        estimatedTimeRange = `${Math.max(15, Math.floor(totalEstimated - 5))} a ${Math.ceil(totalEstimated + 20)} minutos`;
 
-        infoDiv.innerHTML = `Frete: R$ ${deliveryFee.toFixed(2).replace('.', ',')} (Aprox. ${distance.toFixed(1)} km)<br>
-                             <span style="color: #2e7d32; font-weight: bold;">Tempo: ${estimatedTimeRange}</span>`;
+        if (consultFee) {
+            infoDiv.innerHTML = `Frete: <span style="color: #d32f2f; font-weight: bold;">Consulte taxa de entrega</span> (Aprox. ${distance.toFixed(1)} km)<br>
+                                 <span style="color: #2e7d32; font-weight: bold;">Tempo: ${estimatedTimeRange}</span>`;
+        } else {
+            infoDiv.innerHTML = `Frete: R$ ${deliveryFee.toFixed(2).replace('.', ',')} (Aprox. ${distance.toFixed(1)} km)<br>
+                                 <span style="color: #2e7d32; font-weight: bold;">Tempo: ${estimatedTimeRange}</span>`;
+        }
         
         addressGroup.style.display = 'block'; 
         updateCheckoutTotal();
@@ -390,6 +403,7 @@ async function calculateDelivery() {
         document.getElementById('address').value = '';
         addressGroup.style.display = 'block'; 
         deliveryFee = 0;
+        consultFee = true; // Se o CEP não foi encontrado, pede para consultar
         estimatedTimeRange = "A combinar";
         updateCheckoutTotal();
     }
@@ -441,7 +455,8 @@ function toggleOrderType() {
         deliveryFields.style.display = 'none'; 
         dineInFields.style.display = 'block';
         deliveryFee = 0; 
-        estimatedTimeRange = "15 à 30 minutos"; 
+        consultFee = false; // Se for retirada, não precisa consultar frete
+        estimatedTimeRange = "15 a 30 minutos"; 
         updateCheckoutTotal();
     }
 }
@@ -450,8 +465,14 @@ function updateCheckoutTotal() {
     const totalItems = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const orderType = document.getElementById('orderType').value;
     const currentFee = orderType === 'entrega' ? deliveryFee : 0;
+    
     document.getElementById('checkout-subtotal').innerText = totalItems.toFixed(2).replace('.', ',');
-    document.getElementById('checkout-final-total').innerText = (totalItems + currentFee).toFixed(2).replace('.', ',');
+    
+    if (orderType === 'entrega' && consultFee) {
+        document.getElementById('checkout-final-total').innerText = totalItems.toFixed(2).replace('.', ',') + " + Frete";
+    } else {
+        document.getElementById('checkout-final-total').innerText = (totalItems + currentFee).toFixed(2).replace('.', ',');
+    }
 }
 
 function removeItem(index) {
@@ -472,38 +493,53 @@ function sendToWhatsApp() {
     const payment = document.getElementById('payment').value;
     const troco = document.getElementById('troco').value;
 
-    // Remoção de emojis do layout principal e troca do '•' por '-'
-    let message = `*NOVO PEDIDO - GARFIELD LANCHES*\r\n`;
-    message += `*TEMPO ESTIMADO:* ${estimatedTimeRange}\r\n`; 
-    message += `---------------------------------\r\n`;
+    let message = `*NOVO PEDIDO - GARFIELD LANCHES*\n`;
+    message += `*TEMPO ESTIMADO:* ${estimatedTimeRange}\n`; 
+    message += `---------------------------------\n`;
 
     cart.forEach(item => {
-        message += `- ${item.quantity}x - ${item.name} - R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}\r\n`;
-        if (item.addons && item.addons.length > 0) message += `  + ${item.addons.map(a => a.name).join(', ')}\r\n`;
-        if (item.observation) message += `  *Obs:* ${item.observation}\r\n`;
-        message += `\r\n`; // Quebra de linha extra entre os itens
+        message += `- ${item.quantity}x - ${item.name} - R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}\n`;
+        
+        if (item.addons && item.addons.length > 0) {
+            item.addons.forEach(addon => {
+                message += `+ ${addon.name}\n`;
+            });
+        }
+        
+        if (item.observation) message += `*Obs:* ${item.observation}\n`;
+        message += `\n`; 
     });
 
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    message += `---------------------------------\r\n`;
-    message += `*Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\r\n`;
-    if (orderType === 'entrega') message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\r\n`;
-    message += `*TOTAL: R$ ${(subtotal + (orderType === 'entrega' ? deliveryFee : 0)).toFixed(2).replace('.', ',')}*\r\n\r\n`;
+    message += `---------------------------------\n`;
+    message += `*Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
     
-    message += `*Pagamento:* ${payment}\r\n`;
-    if (payment === 'Dinheiro' && troco) message += `*Troco para:* ${troco}\r\n`;
+    if (orderType === 'entrega') {
+        if (consultFee) {
+            message += `*Frete:* Consulte taxa de entrega\n`;
+            message += `*TOTAL (Sem frete): R$ ${subtotal.toFixed(2).replace('.', ',')}*\n\n`;
+        } else {
+            message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
+            message += `*TOTAL: R$ ${(subtotal + deliveryFee).toFixed(2).replace('.', ',')}*\n\n`;
+        }
+    } else {
+        message += `*TOTAL: R$ ${subtotal.toFixed(2).replace('.', ',')}*\n\n`;
+    }
+    
+    message += `*Pagamento:* ${payment}\n`;
+    if (payment === 'Dinheiro' && troco) message += `*Troco para:* ${troco}\n`;
 
     if (orderType === 'entrega') {
-        message += `\r\n*Morada:* ${document.getElementById('address').value}, Nº ${document.getElementById('addressNumber').value}`;
+        message += `\n*Morada:* ${document.getElementById('address').value}, N ${document.getElementById('addressNumber').value}`;
         if (document.getElementById('addressComplement').value) {
             message += ` (${document.getElementById('addressComplement').value})`;
         }
     } else {
-        message += `\r\n*Mesa:* ${document.getElementById('tableNumber').value}`;
+        message += `\n*Mesa:* ${document.getElementById('tableNumber').value}`;
     }
 
-    // Expressão Regular de Segurança: Remove qualquer emoji que o cliente possa ter colocado nos campos de texto
     message = message.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '');
+    message = message.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
     window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
 }
