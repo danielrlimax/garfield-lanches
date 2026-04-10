@@ -472,33 +472,38 @@ function sendToWhatsApp() {
     const payment = document.getElementById('payment').value;
     const troco = document.getElementById('troco').value;
 
-    let message = `*🍔 NOVO PEDIDO - GARFIELD LANCHES*\n`;
-    message += `*TEMPO ESTIMADO:* ${estimatedTimeRange}\n`; 
-    message += `---------------------------------\n`;
+    // Remoção de emojis do layout principal e troca do '•' por '-'
+    let message = `*NOVO PEDIDO - GARFIELD LANCHES*\r\n`;
+    message += `*TEMPO ESTIMADO:* ${estimatedTimeRange}\r\n`; 
+    message += `---------------------------------\r\n`;
 
     cart.forEach(item => {
-        message += `• ${item.quantity}x - ${item.name} - R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}\n`;
-        if (item.addons && item.addons.length > 0) message += `  + ${item.addons.map(a => a.name).join(', ')}\n`;
-        if (item.observation) message += `  *Obs:* ${item.observation}\n`;
+        message += `- ${item.quantity}x - ${item.name} - R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}\r\n`;
+        if (item.addons && item.addons.length > 0) message += `  + ${item.addons.map(a => a.name).join(', ')}\r\n`;
+        if (item.observation) message += `  *Obs:* ${item.observation}\r\n`;
+        message += `\r\n`; // Quebra de linha extra entre os itens
     });
 
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    message += `---------------------------------\n`;
-    message += `*Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
-    if (orderType === 'entrega') message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
-    message += `*TOTAL: R$ ${(subtotal + (orderType === 'entrega' ? deliveryFee : 0)).toFixed(2).replace('.', ',')}*\n\n`;
+    message += `---------------------------------\r\n`;
+    message += `*Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\r\n`;
+    if (orderType === 'entrega') message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\r\n`;
+    message += `*TOTAL: R$ ${(subtotal + (orderType === 'entrega' ? deliveryFee : 0)).toFixed(2).replace('.', ',')}*\r\n\r\n`;
     
-    message += `*Pagamento:* ${payment}\n`;
-    if (payment === 'Dinheiro' && troco) message += `*Troco para:* ${troco}\n`;
+    message += `*Pagamento:* ${payment}\r\n`;
+    if (payment === 'Dinheiro' && troco) message += `*Troco para:* ${troco}\r\n`;
 
     if (orderType === 'entrega') {
-        message += `\n*Morada:* ${document.getElementById('address').value}, Nº ${document.getElementById('addressNumber').value}`;
+        message += `\r\n*Morada:* ${document.getElementById('address').value}, Nº ${document.getElementById('addressNumber').value}`;
         if (document.getElementById('addressComplement').value) {
             message += ` (${document.getElementById('addressComplement').value})`;
         }
     } else {
-        message += `\n*Mesa:* ${document.getElementById('tableNumber').value}`;
+        message += `\r\n*Mesa:* ${document.getElementById('tableNumber').value}`;
     }
+
+    // Expressão Regular de Segurança: Remove qualquer emoji que o cliente possa ter colocado nos campos de texto
+    message = message.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '');
 
     window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
 }
