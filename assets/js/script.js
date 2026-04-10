@@ -332,7 +332,7 @@ function updateCartUI() {
 // CÁLCULO DE FRETE E TEMPO ESTIMADO
 // ==========================================
 let deliveryFee = 0;
-let consultFee = false; // Flag para saber se precisamos combinar o frete
+let consultFee = false; 
 let estimatedTimeRange = ""; 
 let storeCoords = null; 
 
@@ -377,7 +377,7 @@ async function calculateDelivery() {
         else if (distance <= 8.0) deliveryFee = 14.00;
         else {
             deliveryFee = 0;
-            consultFee = true; // Passou de 8km
+            consultFee = true; 
         }
 
         const totalLanches = cart.filter(item => !item.isDrink).reduce((acc, item) => acc + item.quantity, 0);
@@ -403,7 +403,7 @@ async function calculateDelivery() {
         document.getElementById('address').value = '';
         addressGroup.style.display = 'block'; 
         deliveryFee = 0;
-        consultFee = true; // Se o CEP não foi encontrado, pede para consultar
+        consultFee = true; 
         estimatedTimeRange = "A combinar";
         updateCheckoutTotal();
     }
@@ -455,8 +455,9 @@ function toggleOrderType() {
         deliveryFields.style.display = 'none'; 
         dineInFields.style.display = 'block';
         deliveryFee = 0; 
-        consultFee = false; // Se for retirada, não precisa consultar frete
-        estimatedTimeRange = "15 a 30 minutos"; 
+        consultFee = false; 
+        //de 15 a 50 minutos na mesa
+        estimatedTimeRange = "15 a 50 minutos"; 
         updateCheckoutTotal();
     }
 }
