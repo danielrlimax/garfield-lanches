@@ -371,13 +371,25 @@ async function calculateDelivery() {
         
         consultFee = false;
         
-        if (distance <= 2.0) deliveryFee = 5.00;
-        else if (distance <= 4.0) deliveryFee = 8.00;
-        else if (distance <= 6.0) deliveryFee = 10.00;
-        else if (distance <= 8.0) deliveryFee = 14.00;
-        else {
+        if (distance <= 0.5) deliveryFee = 6.00;
+        else if (distance <= 1.0) deliveryFee = 7.00;
+        else if (distance <= 1.5) deliveryFee = 8.00;
+        else if (distance <= 2.0) deliveryFee = 9.00;
+        else if (distance <= 2.5) deliveryFee = 10.00;
+        else if (distance <= 3.0) deliveryFee = 11.00;
+        else if (distance <= 3.5) deliveryFee = 12.00;
+        else if (distance <= 4.0) deliveryFee = 13.00;
+        else if (distance <= 4.5) deliveryFee = 14.00;
+        else if (distance <= 5.0) deliveryFee = 15.00;
+        else if (distance <= 5.5) deliveryFee = 16.00;
+        else if (distance <= 6.0) deliveryFee = 17.00;
+        else if (distance <= 6.5) deliveryFee = 18.00;
+        else if (distance <= 7.0) deliveryFee = 19.00;
+        else if (distance <= 7.5) deliveryFee = 20.00;
+        else if (distance <= 8.0) deliveryFee = 21.00;
+        else if (distance > 8.0) {
             deliveryFee = 0;
-            consultFee = true; 
+            consultFee = true;
         }
 
         const totalLanches = cart.filter(item => !item.isDrink).reduce((acc, item) => acc + item.quantity, 0);
