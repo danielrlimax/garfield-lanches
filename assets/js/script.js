@@ -340,14 +340,29 @@ async function getCoordinates(cep) {
     const resViaCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
     const dataCep = await resViaCep.json();
     if (dataCep.erro) throw new Error("CEP não encontrado");
-    const query = `${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`;
-    const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-    const dataGeo = await resGeo.json();
+    
+    // TENTATIVA 1: Busca pela Rua, Cidade, Estado
+    let query = `${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}`;
+    let resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+    let dataGeo = await resGeo.json();
+    
+    // TENTATIVA 2: Busca por Bairro, Cidade, Estado (Fallback para CEPs como 13484-500)
+    if (dataGeo.length === 0) {
+        query = `${dataCep.bairro}, ${dataCep.localidade}, ${dataCep.uf}`;
+        resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        dataGeo = await resGeo.json();
+    }
+    
     if (dataGeo.length === 0) throw new Error("Localização não encontrada");
+    
+    let addressFormat = dataCep.logradouro ? `${dataCep.logradouro}, ` : '';
+    addressFormat += dataCep.bairro ? `${dataCep.bairro}, ` : '';
+    addressFormat += dataCep.localidade ? dataCep.localidade : '';
+
     return {
         lat: parseFloat(dataGeo[0].lat),
         lon: parseFloat(dataGeo[0].lon),
-        addressName: `${dataCep.logradouro}, ${dataCep.bairro}, ${dataCep.localidade}`
+        addressName: addressFormat
     };
 }
 
@@ -453,10 +468,13 @@ function toggleOrderType() {
     const deliveryFields = document.getElementById('delivery-fields');
     const dineInFields = document.getElementById('dine-in-fields');
     const addressGroup = document.getElementById('address-details-group');
+    const paymentSection = document.getElementById('payment-section'); // Puxando a secção de pagamento (se tiver adicionado a div no HTML)
     
     if (orderType === 'entrega') {
         deliveryFields.style.display = 'block'; 
         dineInFields.style.display = 'none';
+        if(paymentSection) paymentSection.style.display = 'block'; // Mostra pagamento na entrega
+        
         if (document.getElementById('cep').value.length >= 8) {
             calculateDelivery();
         } else {
@@ -466,9 +484,10 @@ function toggleOrderType() {
     } else {
         deliveryFields.style.display = 'none'; 
         dineInFields.style.display = 'block';
+        if(paymentSection) paymentSection.style.display = 'none'; // Esconde pagamento na mesa
+        
         deliveryFee = 0; 
         consultFee = false; 
-        //de 15 a 50 minutos na mesa
         estimatedTimeRange = "15 a 50 minutos"; 
         updateCheckoutTotal();
     }
@@ -503,11 +522,32 @@ function toggleTroco() {
 
 function sendToWhatsApp() {
     const orderType = document.getElementById('orderType').value;
-    const payment = document.getElementById('payment').value;
-    const troco = document.getElementById('troco').value;
+    const paymentElement = document.getElementById('payment');
+    const payment = paymentElement ? paymentElement.value : '';
+    const troco = document.getElementById('troco') ? document.getElementById('troco').value : '';
+
+    // ==========================================
+    // BLOQUEIO SE NÃO PREENCHER O ENDEREÇO/MESA
+    // ==========================================
+    if (orderType === 'entrega') {
+        const cep = document.getElementById('cep').value;
+        const address = document.getElementById('address').value;
+        const addressNumber = document.getElementById('addressNumber').value;
+        
+        if (!cep || !address || !addressNumber) {
+            alert("Por favor, preencha o CEP, a morada (Rua) e o Número para poder entregar.");
+            return; // Bloqueia e não envia
+        }
+    } else {
+        const tableNumber = document.getElementById('tableNumber').value;
+        if (!tableNumber) {
+            alert("Por favor, informe o número da mesa.");
+            return; // Bloqueia e não envia
+        }
+    }
 
     let message = `*NOVO PEDIDO - GARFIELD LANCHES*\n`;
-    message += `*TEMPO ESTIMADO:* ${estimatedTimeRange}\n`; 
+    message += `TEMPO ESTIMADO: ${estimatedTimeRange}\n`; 
     message += `---------------------------------\n`;
 
     cart.forEach(item => {
@@ -519,35 +559,35 @@ function sendToWhatsApp() {
             });
         }
         
-        if (item.observation) message += `*Obs:* ${item.observation}\n`;
+        if (item.observation) message += `*Obs: ${item.observation}\n`;
         message += `\n`; 
     });
 
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     message += `---------------------------------\n`;
-    message += `*Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+    message += `Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
     
     if (orderType === 'entrega') {
         if (consultFee) {
-            message += `*Frete:* Consulte taxa de entrega\n`;
-            message += `*TOTAL (Sem frete): R$ ${subtotal.toFixed(2).replace('.', ',')}*\n\n`;
+            message += `Frete: Consulte taxa de entrega\n`;
+            message += `TOTAL (Sem frete): R$ ${subtotal.toFixed(2).replace('.', ',')}\n\n`;
         } else {
-            message += `*Frete:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
-            message += `*TOTAL: R$ ${(subtotal + deliveryFee).toFixed(2).replace('.', ',')}*\n\n`;
+            message += `Frete: R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
+            message += `TOTAL: R$ ${(subtotal + deliveryFee).toFixed(2).replace('.', ',')}\n\n`;
         }
-    } else {
-        message += `*TOTAL: R$ ${subtotal.toFixed(2).replace('.', ',')}*\n\n`;
-    }
-    
-    message += `*Pagamento:* ${payment}\n`;
-    if (payment === 'Dinheiro' && troco) message += `*Troco para:* ${troco}\n`;
+        
+        // Forma de pagamento aparece APENAS no Delivery
+        if (payment) {
+            message += `Pagamento: ${payment}\n`;
+            if (payment === 'Dinheiro' && troco) message += `Troco para: ${troco}\n`;
+        }
 
-    if (orderType === 'entrega') {
-        message += `\n*Morada:* ${document.getElementById('address').value}, N ${document.getElementById('addressNumber').value}`;
+        message += `\nMorada: ${document.getElementById('address').value}, N ${document.getElementById('addressNumber').value}`;
         if (document.getElementById('addressComplement').value) {
             message += ` (${document.getElementById('addressComplement').value})`;
         }
     } else {
+        message += `TOTAL: R$ ${subtotal.toFixed(2).replace('.', ',')}\n\n`;
         message += `\n*Mesa:* ${document.getElementById('tableNumber').value}`;
     }
 

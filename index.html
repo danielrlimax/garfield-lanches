@@ -113,17 +113,20 @@
                     <input type="text" id="tableNumber" placeholder="Ex: Mesa 04">
                 </div>
 
-                <label>Forma de Pagamento:</label>
-                <select id="payment" onchange="toggleTroco()">
-                    <option value="Pix">Pix</option>
-                    <option value="Cartão">Cartão (Débito/Crédito)</option>
-                    <option value="Dinheiro">Dinheiro</option>
-                </select>
+                <div id="payment-section">
+                    <label>Forma de Pagamento:</label>
+                    <select id="payment" onchange="toggleTroco()">
+                        <option value="Pix">Pix</option>
+                        <option value="Cartão">Cartão (Débito/Crédito)</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                    </select>
 
-                <div id="troco-container" class="troco-container">
-                    <label>Troco para quanto?</label>
-                    <input type="text" id="troco" placeholder="Ex: R$ 50,00">
+                    <div id="troco-container" class="troco-container">
+                        <label>Troco para quanto?</label>
+                        <input type="text" id="troco" placeholder="Ex: R$ 50,00">
+                    </div>
                 </div>
+
             </div>
 
             <button class="btn-confirm btn-whatsapp" onclick="sendToWhatsApp()" style="margin-top: 25px;">Enviar Pedido (WhatsApp)</button>
