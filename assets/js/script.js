@@ -193,15 +193,15 @@ function openAddonModal(item) {
     document.getElementById('flavor-section').style.display = 'none';
 
     const addons = item.category === 'gigantes' ? [
-        { name: 'Catupiry', price: 12.00 },
+        { name: 'Requeijão Cremoso', price: 14.00 },
         { name: 'Cheddar', price: 14.00 },
         { name: 'Cream Cheese', price: 14.00 },
-        { name: 'Purê', price: 12.00 }
+        { name: 'Purê', price: 14.00 }
     ] : [
-        { name: 'Catupiry', price: 6.00 },
+        { name: 'Requeijão Cremoso', price: 7.00 },
         { name: 'Cheddar', price: 7.00 },
         { name: 'Cream Cheese', price: 7.00 },
-        { name: 'Purê', price: 6.00 }
+        { name: 'Purê', price: 7.00 }
     ];
 
     const addonContainer = document.getElementById('addon-list-container');
