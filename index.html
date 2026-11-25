@@ -88,6 +88,7 @@
                 <label for="orderType">Como você quer receber?</label>
                 <select id="orderType" onchange="toggleOrderType()" class="highlight-select">
                     <option value="entrega">Entrega (delivery)</option>
+                    <option value="retirada">Retirada no balcão</option>
                     <option value="mesa">Estou no local (mesa)</option>
                 </select>
 
@@ -119,6 +120,11 @@
                 <div id="dine-in-fields" class="dine-in" style="display: none;">
                     <label for="tableNumber">Número da mesa</label>
                     <input type="text" id="tableNumber" placeholder="Ex.: Mesa 04">
+                </div>
+
+                <div id="pickup-fields" class="dine-in" style="display: none;">
+                    <label for="pickupName">Nome para retirada</label>
+                    <input type="text" id="pickupName" placeholder="Ex.: Ana" autocomplete="given-name">
                 </div>
 
                 <div id="payment-section">

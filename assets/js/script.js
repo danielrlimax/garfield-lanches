@@ -469,9 +469,21 @@ function toggleOrderType() {
     const dineInFields = document.getElementById('dine-in-fields');
     const addressGroup = document.getElementById('address-details-group');
     const paymentSection = document.getElementById('payment-section'); // Puxando a secção de pagamento (se tiver adicionado a div no HTML)
-    
-    if (orderType === 'entrega') {
-        deliveryFields.style.display = 'block'; 
+    const pickupFields = document.getElementById('pickup-fields');
+    if (pickupFields) pickupFields.style.display = orderType === 'retirada' ? 'block' : 'none';
+
+    if (orderType === 'retirada') {
+        deliveryFields.style.display = 'none';
+        dineInFields.style.display = 'none';
+        if(paymentSection) paymentSection.style.display = 'block'; // Retirada paga antes ou no balcão
+        deliveryFee = 0;
+        consultFee = false;
+        const totalLanches = cart.filter(item => !item.isDrink).reduce((acc, item) => acc + item.quantity, 0);
+        const prep = totalLanches > 0 ? 15 + ((totalLanches - 1) * 5) : 10;
+        estimatedTimeRange = `${prep} a ${prep + 15} minutos`;
+        updateCheckoutTotal();
+    } else if (orderType === 'entrega') {
+        deliveryFields.style.display = 'block';
         dineInFields.style.display = 'none';
         if(paymentSection) paymentSection.style.display = 'block'; // Mostra pagamento na entrega
         
@@ -538,6 +550,12 @@ function sendToWhatsApp() {
             alert("Por favor, preencha o CEP, a morada (Rua) e o Número para poder entregar.");
             return; // Bloqueia e não envia
         }
+    } else if (orderType === 'retirada') {
+        const pickupName = document.getElementById('pickupName').value.trim();
+        if (!pickupName) {
+            alert("Por favor, informe o nome para a retirada.");
+            return; // Bloqueia e não envia
+        }
     } else {
         const tableNumber = document.getElementById('tableNumber').value;
         if (!tableNumber) {
@@ -586,6 +604,13 @@ function sendToWhatsApp() {
         if (document.getElementById('addressComplement').value) {
             message += ` (${document.getElementById('addressComplement').value})`;
         }
+    } else if (orderType === 'retirada') {
+        message += `TOTAL: R$ ${subtotal.toFixed(2).replace('.', ',')}\n\n`;
+        if (payment) {
+            message += `Pagamento: ${payment}\n`;
+            if (payment === 'Dinheiro' && troco) message += `Troco para: ${troco}\n`;
+        }
+        message += `\n*Retirada:* ${document.getElementById('pickupName').value.trim()}`;
     } else {
         message += `TOTAL: R$ ${subtotal.toFixed(2).replace('.', ',')}\n\n`;
         message += `\n*Mesa:* ${document.getElementById('tableNumber').value}`;
