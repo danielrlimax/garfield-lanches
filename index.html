@@ -2,134 +2,141 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garfield Lanches - Cardápio Digital</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#16706F">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="shortcut icon" href="assets/img/logo.webp" type="image/x-icon">
 </head>
 <body>
 
-    <header class="menu-header">
-        <div class="logo">
-            GARFIELD <span class="highlight">LANCHES</span>
+    <header class="board">
+        <img src="assets/img/logo.webp" alt="" class="board-logo" width="96" height="96">
+        <div class="board-text">
+            <h1 class="board-name">Garfield Lanches</h1>
+            <p class="board-sub">Lanches na chapa. Entrega, retirada ou mesa.</p>
+            <div class="board-phones">
+                <a href="tel:+5519995219372">(19) 99521-9372</a>
+                <a href="tel:+5519996158563">(19) 99615-8563</a>
+            </div>
         </div>
-        <p class="tagline">Disk Entrega: (19) 99521-9372 / (19) 99615-8563</p>
     </header>
 
-    <nav class="categories">
+    <nav class="categories" aria-label="Categorias do cardápio">
         <button class="cat-btn active" onclick="filterMenu('todos')">Todos</button>
-        <button class="cat-btn" onclick="filterMenu('hotdogs')">Hot Dogs</button>
+        <button class="cat-btn" onclick="filterMenu('hotdogs')">Hot dogs</button>
         <button class="cat-btn" onclick="filterMenu('lanches')">Lanches</button>
         <button class="cat-btn" onclick="filterMenu('gigantes')">Gigantes</button>
         <button class="cat-btn" onclick="filterMenu('bebidas')">Bebidas</button>
     </nav>
 
     <main class="menu-container" id="menu-container">
-        <div id="loading-state" style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--primary-color);">
-            <h2 style="font-size: 1.5rem; margin-bottom: 10px;">🍔 A carregar o cardápio...</h2>
-            <p style="color: var(--text-muted);">A procurar os lanches fresquinhos direto da chapa!</p>
+        <div id="loading-state" class="loading">
+            <p class="loading-title">Esquentando a chapa…</p>
+            <p>Carregando o cardápio.</p>
         </div>
     </main>
 
-    <footer class="cart-footer" onclick="openCheckoutModal()">
+    <footer class="cart-footer" onclick="openCheckoutModal()" role="button" tabindex="0" aria-label="Ver pedido">
         <div class="cart-info">
             <p><span id="cart-count">0</span> itens</p>
             <small>R$ <span id="cart-total">0,00</span></small>
         </div>
-        <button class="btn-order">Ver Pedido</button>
+        <button class="btn-order">Ver pedido</button>
     </footer>
 
     <div id="addon-modal" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeAddonModal()">&times;</span>
+            <span class="close-modal" onclick="closeAddonModal()" role="button" aria-label="Fechar">&times;</span>
             <h2 id="modal-burger-name">Lanche</h2>
-            
+
             <div id="addon-section">
-                <p class="modal-subtitle">Deseja algum acréscimo?</p>
+                <p class="modal-subtitle">Quer algum acréscimo?</p>
                 <div class="addon-list" id="addon-list-container"></div>
             </div>
 
-            <div id="flavor-section" style="display: none; margin-bottom: 15px;">
-                <p class="modal-subtitle" style="margin-bottom: 10px; color: var(--text-main); font-weight: 600;">Escolha o sabor:</p>
+            <div id="flavor-section" style="display: none;">
+                <p class="modal-subtitle">Escolha o sabor</p>
                 <div id="flavor-list" class="addon-list"></div>
             </div>
 
             <div class="observation-section">
                 <label for="item-observation">Alguma observação?</label>
-                <textarea id="item-observation" placeholder="Ex: Tirar cebola, sem maionese..." rows="2"></textarea>
+                <textarea id="item-observation" placeholder="Ex.: sem cebola, sem maionese" rows="2"></textarea>
             </div>
 
             <button class="btn-confirm" onclick="confirmItemWithAddons()">
-                Adicionar - R$ <span id="modal-total-price">0,00</span>
+                Adicionar por R$ <span id="modal-total-price">0,00</span>
             </button>
         </div>
     </div>
 
     <div id="checkout-modal" class="modal">
         <div class="modal-content checkout-content">
-            <span class="close-modal" onclick="closeCheckoutModal()">&times;</span>
-            <h2>O Seu Pedido</h2>
-            
+            <span class="close-modal" onclick="closeCheckoutModal()" role="button" aria-label="Fechar">&times;</span>
+            <h2>Seu pedido</h2>
+
             <div id="checkout-items" class="checkout-items-list"></div>
             <hr class="checkout-divider">
-            <h3 class="checkout-total-text">Subtotal: <span>R$ <span id="checkout-subtotal">0,00</span></span></h3>
-            <h3 class="checkout-total-text" style="color: var(--primary-color);">Total Final: <span>R$ <span id="checkout-final-total">0,00</span></span></h3>
+            <h3 class="checkout-total-text">Subtotal <span>R$ <span id="checkout-subtotal">0,00</span></span></h3>
+            <h3 class="checkout-total-text checkout-final">Total <span>R$ <span id="checkout-final-total">0,00</span></span></h3>
 
             <div class="checkout-form">
-                <label>Tipo de Pedido:</label>
+                <label for="orderType">Como você quer receber?</label>
                 <select id="orderType" onchange="toggleOrderType()" class="highlight-select">
-                    <option value="entrega">🛵 Entrega (Delivery)</option>
-                    <option value="mesa">🍽️ No Estabelecimento (Mesa)</option>
+                    <option value="entrega">Entrega (delivery)</option>
+                    <option value="mesa">Estou no local (mesa)</option>
                 </select>
 
                 <div id="delivery-fields">
-                    <label>1. Calcular Frete (Insira o seu CEP):</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="cep" placeholder="Ex: 13484-489" maxlength="9" onblur="calculateDelivery()" style="flex: 1;">
-                        <button type="button" class="btn-add" onclick="calculateDelivery()" style="padding: 0 15px; border-radius: 10px;">Buscar</button>
+                    <label for="cep">CEP para calcular a entrega</label>
+                    <div class="cep-row">
+                        <input type="text" id="cep" placeholder="Ex.: 13484-489" maxlength="9" inputmode="numeric" onblur="calculateDelivery()">
+                        <button type="button" class="btn-add" onclick="calculateDelivery()">Calcular</button>
                     </div>
-                    <div id="frete-info" style="color: var(--primary-color); font-weight: bold; margin-top: 8px; font-size: 0.9rem;"></div>
+                    <div id="frete-info" class="frete-info"></div>
 
-                    <div id="address-details-group" style="display: none; animation: fadeIn 0.4s ease;">
-                        <label>2. Morada de Entrega:</label>
-                        <input type="text" id="address" placeholder="Rua, Bairro, Cidade" readonly class="readonly-input">
+                    <div id="address-details-group" style="display: none;">
+                        <label for="address">Endereço de entrega</label>
+                        <input type="text" id="address" placeholder="Rua, bairro, cidade" readonly class="readonly-input">
 
-                        <div style="display: flex; gap: 10px;">
-                            <div style="flex: 1;">
-                                <label>Número:</label>
-                                <input type="text" id="addressNumber" placeholder="Ex: 123">
+                        <div class="address-row">
+                            <div class="address-number">
+                                <label for="addressNumber">Número</label>
+                                <input type="text" id="addressNumber" placeholder="Ex.: 123">
                             </div>
-                            <div style="flex: 2;">
-                                <label>Complemento:</label>
+                            <div class="address-complement">
+                                <label for="addressComplement">Complemento</label>
                                 <input type="text" id="addressComplement" placeholder="Opcional">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="dine-in-fields" style="display: none; background: rgba(255, 140, 0, 0.05); padding: 15px; border-radius: 10px; border: 1px dashed var(--primary-color); margin-top: 15px;">
-                    <label style="margin-top: 0; color: var(--primary-color);">Qual é o número da sua mesa?</label>
-                    <input type="text" id="tableNumber" placeholder="Ex: Mesa 04">
+                <div id="dine-in-fields" class="dine-in" style="display: none;">
+                    <label for="tableNumber">Número da mesa</label>
+                    <input type="text" id="tableNumber" placeholder="Ex.: Mesa 04">
                 </div>
 
                 <div id="payment-section">
-                    <label>Forma de Pagamento:</label>
+                    <label for="payment">Forma de pagamento</label>
                     <select id="payment" onchange="toggleTroco()">
                         <option value="Pix">Pix</option>
-                        <option value="Cartão">Cartão (Débito/Crédito)</option>
+                        <option value="Cartão">Cartão (débito ou crédito)</option>
                         <option value="Dinheiro">Dinheiro</option>
                     </select>
 
                     <div id="troco-container" class="troco-container">
-                        <label>Troco para quanto?</label>
-                        <input type="text" id="troco" placeholder="Ex: R$ 50,00">
+                        <label for="troco">Troco para quanto?</label>
+                        <input type="text" id="troco" placeholder="Ex.: R$ 50,00" inputmode="decimal">
                     </div>
                 </div>
-
             </div>
 
-            <button class="btn-confirm btn-whatsapp" onclick="sendToWhatsApp()" style="margin-top: 25px;">Enviar Pedido (WhatsApp)</button>
+            <button class="btn-confirm btn-whatsapp" onclick="sendToWhatsApp()">Enviar pedido pelo WhatsApp</button>
         </div>
     </div>
 
